@@ -18,8 +18,6 @@ from . import sublack
 
 sys.modules["sublack"] = sublack
 
-print("dans sb", dir(sublack))
-
 # def plugin_loaded():
 
 #     # set logLevel

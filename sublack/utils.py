@@ -71,7 +71,9 @@ def get_encoding_from_file(view):
 class BlackdServer:
     def __init__(self, host="localhost", port=None):
         if not port:
-            self.port = self.get_open_port()
+            # self.port = str(45486)
+            self.port = str(self.get_open_port())
+            print(self.port)
         self.host = host
         self.proc = None
         self.platform = sublime.platform()
@@ -79,14 +81,19 @@ class BlackdServer:
     def run(self):
         # use this complexity to properly terminate blackd
 
-        if self.platform == "linux":
+        cmd = ["blackd", "--bind-port", self.port]
+
+        if self.platform in ["linux", "osx"]:
             self.proc = subprocess.Popen(
-                ["blackd"], stdout=subprocess.PIPE, shell=True, preexec_fn=os.setsid
+                cmd, stdout=subprocess.PIPE, preexec_fn=os.setsid
             )
+            import time
+
+            time.sleep(30)
             LOG.debug("plaform linux for blackserver")
         elif self.platform == "windows":
             self.proc = subprocess.Popen(
-                ["blackd"], creationflags=subprocess.CREATE_NEW_PROCESS_GROUP
+                cmd, creationflags=subprocess.CREATE_NEW_PROCESS_GROUP
             )
             LOG.debug("plaform windows for blackserver")
         LOG.info(
@@ -94,17 +101,15 @@ class BlackdServer:
                 self.host, self.port, self.proc.pid
             )
         )
-        # LOG.info('omk')
 
     def stop(self):
-        if self.platform in ["linux","osx"]:
+        if self.platform in ["linux", "osx"]:
             os.killpg(os.getpgid(self.proc.pid), signal.SIGTERM)
         elif self.platform == "windows":
             try:
                 self.proc.send_signal(signal.CTRL_BREAK_EVENT)
             except PermissionError:
                 pass
-
 
     def get_open_port(self):
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)

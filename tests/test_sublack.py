@@ -358,7 +358,7 @@ class TestUtils(TestCase):
         self.assertEqual(e, "deuxieme ligne")
 
 
-# @skip("demonstrating skipping")
+@skip("demonstrating skipping")
 @patch.object(sublack.commands, "is_python", return_value=True)
 class TestBlack(TestCase):
     def setUp(self):
@@ -438,14 +438,12 @@ BASE_SETTINGS = {
     "black_blackd_port": blackd_proc.port,
 }
 
-
-@skip("traivs")
+# @skip("traivs")
 @patch.object(sublack.commands, "is_python", return_value=True)
 @patch.object(sublack.blacker, "get_settings", return_value=BASE_SETTINGS)
 class TestBlackdServer(TestCase):
     def setUp(self):
         self.view = sublime.active_window().new_file()
-        # self.view.settings().set("black_use_blackd", True)
         # make sure we have a window to work with
         s = sublime.load_settings("Preferences.sublime-settings")
         s.set("close_windows_when_empty", False)

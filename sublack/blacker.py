@@ -61,7 +61,6 @@ class Blackd:
         self.headers.update(
             {"Content-Type": "application/octet-stream; charset=" + self.encoding}
         )
-
         url = (
             "http://"
             + self.config["black_blackd_host"]
@@ -69,8 +68,10 @@ class Blackd:
             + self.config["black_blackd_port"]
             + "/"
         )
-
-        response = requests.post(url, data=self.content, headers=self.headers)
+        try:
+            response = requests.post(url, data=self.content, headers=self.headers)
+        except Exception:
+            print("respon.conten", response.content)
 
         return self.process_response(response)
 
