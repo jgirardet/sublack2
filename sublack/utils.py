@@ -74,16 +74,17 @@ class BlackdServer:
             self.port = self.get_open_port()
         self.host = host
         self.proc = None
+        self.platform = sublime.platform()
 
     def run(self):
         # use this complexity to properly terminate blackd
 
-        if sublime.platform() == "linux":
+        if self.platform == "linux":
             self.proc = subprocess.Popen(
                 ["blackd"], stdout=subprocess.PIPE, shell=True, preexec_fn=os.setsid
             )
             LOG.debug("plaform linux for blackserver")
-        elif sublime.platform() == "windows":
+        elif self.platform == "windows":
             self.proc = subprocess.Popen(
                 ["blackd"], creationflags=subprocess.CREATE_NEW_PROCESS_GROUP
             )
@@ -96,7 +97,10 @@ class BlackdServer:
         # LOG.info('omk')
 
     def stop(self):
-        os.killpg(os.getpgid(self.proc.pid), signal.SIGTERM)
+        if self.platform == "linux":
+            os.killpg(os.getpgid(self.proc.pid), signal.SIGTERM)
+        elif self.platform == "windows":
+            self.proc.send_signal(signal.CTRL_BREAK_EVENT)
 
     def get_open_port(self):
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
