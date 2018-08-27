@@ -13,9 +13,9 @@ from .consts import (
     SETTINGS_NS_PREFIX,
 )
 
-# import logging
+import logging
 
-# LOG = logging.getLogger("sublack")
+LOG = logging.getLogger("sublack")
 
 
 def get_settings(view):
