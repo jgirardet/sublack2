@@ -19,60 +19,60 @@ from .utils import get_settings, get_encoding_from_file
 LOG = logging.getLogger("sublack")
 
 
-# class Blackd:
-#     """warpper between black command line and blackd."""
+class Blackd:
+    """warpper between black command line and blackd."""
 
-#     def __init__(self, cmd, content, encoding, config):
-#         self.headers = self.format_headers(cmd)
-#         self.content = content
-#         self.encoding = encoding
-#         self.config = config
+    def __init__(self, cmd, content, encoding, config):
+        self.headers = self.format_headers(cmd)
+        self.content = content
+        self.encoding = encoding
+        self.config = config
 
-#     def format_headers(self, cmd):
-#         """Get command line args and turn it to properly formatted headers"""
-#         headers = {}
+    def format_headers(self, cmd):
+        """Get command line args and turn it to properly formatted headers"""
+        headers = {}
 
-#         # all but line length
-#         for item in cmd:
-#             if item in HEADERS_TABLE:
-#                 headers.update(HEADERS_TABLE[item])
-#         # line length
-#         if "-l" in cmd:
-#             headers["X-Line-Length"] = cmd[cmd.index("-l") + 1]
+        # all but line length
+        for item in cmd:
+            if item in HEADERS_TABLE:
+                headers.update(HEADERS_TABLE[item])
+        # line length
+        if "-l" in cmd:
+            headers["X-Line-Length"] = cmd[cmd.index("-l") + 1]
 
-#         return headers
+        return headers
 
-#     def process_response(self, response):
-#         """Format to the Popen format.
+    def process_response(self, response):
+        """Format to the Popen format.
 
-#         returncode(int), out(byte), err(byte)
-#         """
-#         if response.status_code == 200:
-#             return 0, response.content, b""
+        returncode(int), out(byte), err(byte)
+        """
+        if response.status_code == 200:
+            return 0, response.content, b""
 
-#         elif response.status_code == 204:
-#             return 0, response.content, b"unchanged"
+        elif response.status_code == 204:
+            return 0, response.content, b"unchanged"
 
-#         elif response.status_code in [400, 500]:
-#             return -1, b"", response.content
+        elif response.status_code in [400, 500]:
+            return -1, b"", response.content
 
-#     def __call__(self):
+    def __call__(self):
 
-#         self.headers.update(
-#             {"Content-Type": "application/octet-stream; charset=" + self.encoding}
-#         )
+        self.headers.update(
+            {"Content-Type": "application/octet-stream; charset=" + self.encoding}
+        )
 
-#         url = (
-#             "http://"
-#             + self.config["black_blackd_host"]
-#             + ":"
-#             + self.config["black_blackd_port"]
-#             + "/"
-#         )
+        url = (
+            "http://"
+            + self.config["black_blackd_host"]
+            + ":"
+            + self.config["black_blackd_port"]
+            + "/"
+        )
 
-#         response = requests.post(url, data=self.content, headers=self.headers)
+        response = requests.post(url, data=self.content, headers=self.headers)
 
-#         return self.process_response(response)
+        return self.process_response(response)
 
 
 class Black:
