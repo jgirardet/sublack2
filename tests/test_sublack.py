@@ -435,7 +435,7 @@ BASE_SETTINGS = {
     "black_exclude": None,
     "black_use_blackd": True,
     "black_blackd_host": "localhost",
-    "black_blackd_port": "45484",
+    "black_blackd_port": blackd_proc.port,
 }
 
 
