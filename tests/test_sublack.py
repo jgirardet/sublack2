@@ -15,25 +15,21 @@ import os.path
 # sys.path.append(op)
 
 sublack = sys.modules["sublack"]
-print(dir(sublack))
 
-# sublack = sys.modules["sublack2._sublack"]
-
-
-# blackd_proc = sublack.utils.BlackdServer()
+blackd_proc = sublack.utils.BlackdServer()
 
 
-# def setUpModule():
-#     try:
-#         requests.get("http://localhost:45484")
-#     except requests.ConnectionError:
-#         global blackd_proc
-#         blackd_proc.run()
+def setUpModule():
+    try:
+        requests.get("http://localhost:45484")
+    except requests.ConnectionError:
+        global blackd_proc
+        blackd_proc.run()
 
 
-# def tearDownModule():
-#     global blackd_proc
-#     blackd_proc.stop()
+def tearDownModule():
+    global blackd_proc
+    blackd_proc.stop()
 
 
 blacked = """def get_encoding_from_file(view):
@@ -84,6 +80,7 @@ diff = """@@ -1,12 +1,12 @@
 class TesstRien(TestCase):
     def test_true(self):
         self.assertTrue(True)
+
 
 # @skip("demonstrating skipping")
 class TestBlackMethod(TestCase):
@@ -361,141 +358,140 @@ class TestUtils(TestCase):
         self.assertEqual(e, "deuxieme ligne")
 
 
-
 # @skip("demonstrating skipping")
-# @patch.object(sublack.commands, "is_python", return_value=True)
-# class TestBlack(TestCase):
-#     def setUp(self):
-#         self.view = sublime.active_window().new_file()
-#         # make sure we have a window to work with
-#         s = sublime.load_settings("Preferences.sublime-settings")
-#         s.set("close_windows_when_empty", False)
-#         self.maxDiff = None
+@patch.object(sublack.commands, "is_python", return_value=True)
+class TestBlack(TestCase):
+    def setUp(self):
+        self.view = sublime.active_window().new_file()
+        # make sure we have a window to work with
+        s = sublime.load_settings("Preferences.sublime-settings")
+        s.set("close_windows_when_empty", False)
+        self.maxDiff = None
 
-#     def tearDown(self):
-#         if self.view:
-#             self.view.set_scratch(True)
-#             self.view.window().focus_view(self.view)
-#             self.view.window().run_command("close_file")
+    def tearDown(self):
+        if self.view:
+            self.view.set_scratch(True)
+            self.view.window().focus_view(self.view)
+            self.view.window().run_command("close_file")
 
-#     def all(self):
-#         all_file = sublime.Region(0, self.view.size())
-#         return self.view.substr(all_file)
+    def all(self):
+        all_file = sublime.Region(0, self.view.size())
+        return self.view.substr(all_file)
 
-#     def setText(self, string):
-#         self.view.run_command("append", {"characters": string})
+    def setText(self, string):
+        self.view.run_command("append", {"characters": string})
 
-#     def test_blacked(self, s):
-#         self.setText(unblacked)
-#         self.view.run_command("black_file")
-#         self.assertEqual(blacked, self.all())
+    def test_blacked(self, s):
+        self.setText(unblacked)
+        self.view.run_command("black_file")
+        self.assertEqual(blacked, self.all())
 
-#     def test_nothing_todo(self, s):
-#         self.setText(blacked)
-#         self.view.run_command("black_file")
-#         self.assertEqual(blacked, self.all())
+    def test_nothing_todo(self, s):
+        self.setText(blacked)
+        self.view.run_command("black_file")
+        self.assertEqual(blacked, self.all())
 
-#     def test_dirty_stay_dirty(self, s):
-#         self.setText(blacked)
-#         self.assertTrue(self.view.is_dirty())
-#         self.view.run_command("black_file")
-#         self.assertTrue(self.view.is_dirty())
-#         self.assertEqual(blacked, self.all())
+    def test_dirty_stay_dirty(self, s):
+        self.setText(blacked)
+        self.assertTrue(self.view.is_dirty())
+        self.view.run_command("black_file")
+        self.assertTrue(self.view.is_dirty())
+        self.assertEqual(blacked, self.all())
 
-#     def test_do_diff(self, s):
-#         # setup in case of fail
-#         # self.addCleanup(self.view.close)
-#         # self.addCleanup(self.view.set_scratch, True)
+    def test_do_diff(self, s):
+        # setup in case of fail
+        # self.addCleanup(self.view.close)
+        # self.addCleanup(self.view.set_scratch, True)
 
-#         self.setText(unblacked)
-#         self.view.set_name("base")
-#         backup = self.view
-#         self.view.run_command("black_diff")
+        self.setText(unblacked)
+        self.view.set_name("base")
+        backup = self.view
+        self.view.run_command("black_diff")
 
-#         w = sublime.active_window()
-#         v = w.active_view()
-#         res = sublime.Region(0, v.size())
-#         res = sublime.Region(v.lines(res)[2].begin(), v.size())
-#         res = v.substr(res).strip()
-#         self.assertEqual(res, diff)
-#         self.assertEqual(
-#             v.settings().get("syntax"), "Packages/Diff/Diff.sublime-syntax"
-#         )
-#         self.view = backup
-#         v.set_scratch(True)
-#         v.close()
-
-
-# BASE_SETTINGS = {
-#     "black_command": "black",
-#     "black_on_save": True,
-#     "black_line_length": None,
-#     "black_fast": False,
-#     "black_debug_on": True,
-#     "black_default_encoding": "utf-8",
-#     "black_skip_string_normalization": False,
-#     "black_include": None,
-#     "black_py36": None,
-#     "black_exclude": None,
-#     "black_use_blackd": True,
-#     "black_blackd_host": "localhost",
-#     "black_blackd_port": "45484",
-# }
+        w = sublime.active_window()
+        v = w.active_view()
+        res = sublime.Region(0, v.size())
+        res = sublime.Region(v.lines(res)[2].begin(), v.size())
+        res = v.substr(res).strip()
+        self.assertEqual(res, diff)
+        self.assertEqual(
+            v.settings().get("syntax"), "Packages/Diff/Diff.sublime-syntax"
+        )
+        self.view = backup
+        v.set_scratch(True)
+        v.close()
 
 
-# @skip("traivs")
-# @patch.object(sublack.commands, "is_python", return_value=True)
-# @patch.object(sublack.blacker, "get_settings", return_value=BASE_SETTINGS)
-# class TestBlackdServer(TestCase):
-#     def setUp(self):
-#         self.view = sublime.active_window().new_file()
-#         # self.view.settings().set("black_use_blackd", True)
-#         # make sure we have a window to work with
-#         s = sublime.load_settings("Preferences.sublime-settings")
-#         s.set("close_windows_when_empty", False)
+BASE_SETTINGS = {
+    "black_command": "black",
+    "black_on_save": True,
+    "black_line_length": None,
+    "black_fast": False,
+    "black_debug_on": True,
+    "black_default_encoding": "utf-8",
+    "black_skip_string_normalization": False,
+    "black_include": None,
+    "black_py36": None,
+    "black_exclude": None,
+    "black_use_blackd": True,
+    "black_blackd_host": "localhost",
+    "black_blackd_port": "45484",
+}
 
-#     def tearDown(self):
-#         if self.view:
-#             self.view.set_scratch(True)
-#             self.view.window().focus_view(self.view)
-#             self.view.window().run_command("close_file")
 
-#     def all(self):
-#         all_file = sublime.Region(0, self.view.size())
-#         return self.view.substr(all_file)
+@skip("traivs")
+@patch.object(sublack.commands, "is_python", return_value=True)
+@patch.object(sublack.blacker, "get_settings", return_value=BASE_SETTINGS)
+class TestBlackdServer(TestCase):
+    def setUp(self):
+        self.view = sublime.active_window().new_file()
+        # self.view.settings().set("black_use_blackd", True)
+        # make sure we have a window to work with
+        s = sublime.load_settings("Preferences.sublime-settings")
+        s.set("close_windows_when_empty", False)
 
-#     def setText(self, string):
-#         self.view.run_command("append", {"characters": string})
+    def tearDown(self):
+        if self.view:
+            self.view.set_scratch(True)
+            self.view.window().focus_view(self.view)
+            self.view.window().run_command("close_file")
 
-#     # def test_fail(self, s):
-#     #     self.assertEqual(True, self.view.settings().get("black_use_blackd"))
+    def all(self):
+        all_file = sublime.Region(0, self.view.size())
+        return self.view.substr(all_file)
 
-#     def test_blacked(self, s, c):
-#         self.setText(unblacked)
-#         self.view.run_command("black_file")
-#         self.assertEqual(blacked, self.all())
+    def setText(self, string):
+        self.view.run_command("append", {"characters": string})
 
-#     def test_nothing_todo(self, s, c):
-#         self.setText(blacked)
-#         self.view.run_command("black_file")
-#         self.assertEqual(blacked, self.all())
+    # def test_fail(self, s):
+    #     self.assertEqual(True, self.view.settings().get("black_use_blackd"))
 
-#     def test_do_diff(self, s, c):
-#         """"sould be called evenv blacked"""
+    def test_blacked(self, s, c):
+        self.setText(unblacked)
+        self.view.run_command("black_file")
+        self.assertEqual(blacked, self.all())
 
-#         self.setText(unblacked)
-#         self.view.set_name("base")
-#         backup = self.view
-#         self.view.run_command("black_diff")
-#         w = sublime.active_window()
-#         v = w.active_view()
-#         res = sublime.Region(0, v.size())
-#         res = sublime.Region(v.lines(res)[2].begin(), v.size())
-#         res = v.substr(res).strip()
-#         self.assertEqual(res, diff)
-#         self.assertEqual(
-#             v.settings().get("syntax"), "Packages/Diff/Diff.sublime-syntax"
-#         )
-#         self.view = backup
-#         v.set_scratch(True)
-#         v.close()
+    def test_nothing_todo(self, s, c):
+        self.setText(blacked)
+        self.view.run_command("black_file")
+        self.assertEqual(blacked, self.all())
+
+    def test_do_diff(self, s, c):
+        """"sould be called evenv blacked"""
+
+        self.setText(unblacked)
+        self.view.set_name("base")
+        backup = self.view
+        self.view.run_command("black_diff")
+        w = sublime.active_window()
+        v = w.active_view()
+        res = sublime.Region(0, v.size())
+        res = sublime.Region(v.lines(res)[2].begin(), v.size())
+        res = v.substr(res).strip()
+        self.assertEqual(res, diff)
+        self.assertEqual(
+            v.settings().get("syntax"), "Packages/Diff/Diff.sublime-syntax"
+        )
+        self.view = backup
+        v.set_scratch(True)
+        v.close()

@@ -1,8 +1,10 @@
 import sys
+
 # import logging
 # import sublime
 
-# from .sublack.commands import *  # noqa
+from .sublack import *  # noqa
+
 # from .sublack.utils import get_settings
 # from .sublack import rien
 # from .sublack import blacker
@@ -13,7 +15,8 @@ import sys
 
 
 from . import sublack
-sys.modules['sublack'] = sublack
+
+sys.modules["sublack"] = sublack
 
 print("dans sb", dir(sublack))
 
