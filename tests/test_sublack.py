@@ -1,14 +1,14 @@
-import os
-import sys
-from unittest import TestCase, skip  # noqa
-from unittest.mock import MagicMock, patch
+# import os
+# import sys
+# from unittest import TestCase, skip  # noqa
+# from unittest.mock import MagicMock, patch
 
-import requests
-import sublime
+# import requests
+# import sublime
 
-version = sublime.version()
+# version = sublime.version()
 
-sublack = sys.modules["sublack2._sublack"]
+# sublack = sys.modules["sublack2._sublack"]
 
 
 # blackd_proc = sublack.utils.BlackdServer()
