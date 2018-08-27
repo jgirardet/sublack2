@@ -12,7 +12,7 @@ LOG.setLevel(logging.INFO)
 
 from . import _sublack
 import sys
-sys.modules['sublack'] = "_sublack"
+sys.modules['sublack'] = _sublack
 
 def plugin_loaded():
 
