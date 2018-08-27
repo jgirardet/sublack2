@@ -10,10 +10,10 @@ LOG = logging.getLogger("sublack")
 LOG.setLevel(logging.INFO)
 
 
-# def plugin_loaded():
+def plugin_loaded():
 
-#     # set logLevel
-#     current_view = sublime.active_window().active_view()
-#     config = get_settings(current_view)
-#     if config["black_debug_on"]:
-#         LOG.setLevel(logging.DEBUG)
+    # set logLevel
+    current_view = sublime.active_window().active_view()
+    config = get_settings(current_view)
+    if config["black_debug_on"]:
+        LOG.setLevel(logging.DEBUG)
