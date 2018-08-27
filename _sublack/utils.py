@@ -81,19 +81,20 @@ class BlackdServer:
         self.proc = subprocess.Popen(
             ["blackd"], stdout=subprocess.PIPE, shell=True, preexec_fn=os.setsid
         )
-        # LOG.info(
-        #     "blackd running at {} on port {} with pid {}".format(
-        #         self.host, self.port, self.proc.pid
-        #     )
-        LOG.info('omk')
+        LOG.info(
+            "blackd running at {} on port {} with pid {}".format(
+                self.host, self.port, self.proc.pid
+            ))
+        # LOG.info('omk')
         
 
     def stop(self):
         os.killpg(os.getpgid(self.proc.pid), signal.SIGTERM)
 
     def get_open_port(self):
-        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        s.bind(("", 0))
-        port = s.getsockname()[1]
-        s.close()
-        return port
+        # s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        # s.bind(("", 0))
+        # port = s.getsockname()[1]
+        # s.close()
+        # return port
+        return 2
