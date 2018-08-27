@@ -2,7 +2,7 @@ import logging
 import sublime
 
 # from ._sublack.commands import *  # noqa
-# from ._sublack.utils import get_settings
+from ._sublack.utils import get_settings
 
 LOG = logging.getLogger("sublack")
 # handler = logging.StreamHandler()
