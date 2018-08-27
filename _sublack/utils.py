@@ -97,5 +97,4 @@ class BlackdServer:
         s.bind(("", 0))
         port = s.getsockname()[1]
         s.close()
-        # return port
-        return 2
+        return port
