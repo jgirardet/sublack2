@@ -95,7 +95,7 @@ class BlackdServer:
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         print('après socket')
         s.bind(("", 0))
-        # port = s.getsockname()[1]
+        port = s.getsockname()[1]
         # s.close()
         # return port
         return 2
