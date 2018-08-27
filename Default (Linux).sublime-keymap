@@ -1,0 +1,14 @@
+[
+    {
+        "keys": [
+            "ctrl+alt+b"
+        ],
+        "command": "black_file"
+    },    
+    {
+        "keys": [
+            "ctrl+alt+shift+b"
+        ],
+        "command": "black_diff"
+    },
+]

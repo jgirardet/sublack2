@@ -1,0 +1,56 @@
+{
+      // ########################
+      // Black specific options #
+      // ########################
+
+
+
+      // line length
+      // uses black default, if not modified
+      "black_line_length": null,
+
+      // If --fast given, skip temporary sanity checks.
+      "black_fast": false,
+      
+      // prevent black from changing single quote to double quotes
+      // default is false
+      // add --black_skip_string_normalization
+      "black_skip_string_normalization": false,
+
+      // Directory to include: null is black's default
+      "black_include": null,
+
+      // Directory to exclude: null is black's default
+      "black_exclude": null,
+
+      // force py36 syntax mode
+      "black_py36": null,
+
+      // ##########################
+      // Sublack specific options #
+      // ##########################
+
+      // full path and command to run black
+      "black_command": "black",
+
+      // run black before saving document
+      "black_on_save": false,
+
+      //debug mode
+      // show black log in console, errors are always shown
+      "black_debug_on": false,
+
+      // default encoding for never saved file, if not specified un  first 2 lines (pep 263):
+      // default is "utf-8". Change this only if you want override default behaviour.
+      "black_default_encoding": "utf-8",
+
+      // use blackd server instead of black
+      "black_use_blackd": false,
+
+      // blackd server host
+      "black_blackd_host": "localhost",
+
+      //blackd server port, default is like black, should be string
+      "black_blackd_port": "45484"
+ 
+}
