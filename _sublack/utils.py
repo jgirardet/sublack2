@@ -96,6 +96,6 @@ class BlackdServer:
         print('après socket')
         s.bind(("", 0))
         port = s.getsockname()[1]
-        # s.close()
+        s.close()
         # return port
         return 2
