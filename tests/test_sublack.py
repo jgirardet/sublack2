@@ -358,7 +358,7 @@ class TestUtils(TestCase):
         self.assertEqual(e, "deuxieme ligne")
 
 
-@skip("demonstrating skipping")
+# @skip("demonstrating skipping")
 @patch.object(sublack.commands, "is_python", return_value=True)
 class TestBlack(TestCase):
     def setUp(self):

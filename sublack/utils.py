@@ -88,9 +88,6 @@ class BlackdServer:
                 cmd, preexec_fn=os.setsid
                 # cmd, stdout=subprocess.PIPE, preexec_fn=os.setsid
             )
-            import time
-
-            time.sleep(30)
             LOG.debug("plaform linux for blackserver")
         elif self.platform == "windows":
             self.proc = subprocess.Popen(
