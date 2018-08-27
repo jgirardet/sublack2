@@ -97,14 +97,14 @@ class BlackdServer:
         # LOG.info('omk')
 
     def stop(self):
-        if self.platform == "linux":
+        if self.platform in ["linux","osx"]:
             os.killpg(os.getpgid(self.proc.pid), signal.SIGTERM)
         elif self.platform == "windows":
             try:
                 self.proc.send_signal(signal.CTRL_BREAK_EVENT)
             except PermissionError:
                 pass
-            
+
 
     def get_open_port(self):
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
