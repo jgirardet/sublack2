@@ -1,13 +1,13 @@
-# import logging
-# import sublime
+import logging
+import sublime
 
 # from ._sublack.commands import *  # noqa
 # from ._sublack.utils import get_settings
 
-# LOG = logging.getLogger("sublack")
-# # handler = logging.StreamHandler()
-# # LOG.addHandler(handler)
-# LOG.setLevel(logging.INFO)
+LOG = logging.getLogger("sublack")
+# handler = logging.StreamHandler()
+# LOG.addHandler(handler)
+LOG.setLevel(logging.INFO)
 
 
 # def plugin_loaded():
