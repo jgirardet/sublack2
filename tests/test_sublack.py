@@ -20,11 +20,11 @@ blackd_proc = sublack.utils.BlackdServer()
 
 
 def setUpModule():
-    try:
-        requests.get("http://localhost:45484")
-    except requests.ConnectionError:
-        global blackd_proc
-        blackd_proc.run()
+    # try:
+    #     requests.get("http://localhost:45484")
+    # except requests.ConnectionError:
+    global blackd_proc
+    blackd_proc.run()
 
 
 def tearDownModule():
