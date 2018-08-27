@@ -1,6 +1,6 @@
 environment:
     # The package name
-    PACKAGE: "sublack"
+    PACKAGE: "sublack2"
     SUBLIME_TEXT_VERSION : "3"
 
 install:
