@@ -1,7 +1,7 @@
 import sublime_plugin
 from .consts import BLACK_ON_SAVE_VIEW_SETTING, STATUS_KEY
 from .utils import get_settings
-from .sublack import Black
+# from .sublack import Black
 import logging
 
 LOG = logging.getLogger("sublack")
@@ -23,7 +23,7 @@ class BlackFileCommand(sublime_plugin.TextCommand):
 
     def run(self, edit):
         LOG.debug("[SUBLACK] : run black_file")
-        Black(self.view)(edit)
+        # Black(self.view)(edit)
 
 
 class BlackDiffCommand(sublime_plugin.TextCommand):
@@ -38,7 +38,7 @@ class BlackDiffCommand(sublime_plugin.TextCommand):
 
     def run(self, edit):
         LOG.debug("[SUBLACK] : run black_diff")
-        Black(self.view)(edit, extra=["--diff"])
+        # Black(self.view)(edit, extra=["--diff"])
 
 
 class BlackToggleBlackOnSaveCommand(sublime_plugin.TextCommand):
