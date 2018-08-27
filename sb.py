@@ -1,10 +1,11 @@
+import sys
 # import logging
 # import sublime
 
-from .sublack.commands import *  # noqa
-from .sublack.utils import get_settings
-from .sublack import rien
-from .sublack import blacker
+# from .sublack.commands import *  # noqa
+# from .sublack.utils import get_settings
+# from .sublack import rien
+# from .sublack import blacker
 # LOG = logging.getLogger("sublack")
 # handler = logging.StreamHandler()
 # LOG.addHandler(handler)
@@ -12,7 +13,6 @@ from .sublack import blacker
 
 
 from . import sublack
-import sys
 sys.modules['sublack'] = sublack
 
 print("dans sb", dir(sublack))
