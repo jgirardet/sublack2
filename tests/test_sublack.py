@@ -8,6 +8,9 @@ import sublime
 
 version = sublime.version()
 
+print(sys.modules)
+print("kkkkkkkkkkkkkkkkkkkkkkkkkk")
+print(sys.path)
 sublack = sys.modules["sublack2._sublack"]
 
 
