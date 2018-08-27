@@ -1,88 +1,12 @@
 import os
-import sys
 from unittest import TestCase, skip  # noqa
 from unittest.mock import MagicMock, patch
 
-import requests
 import sublime
-
-version = sublime.version()
-
-import os.path
-
-# np = os.path.abspath(__file__)
-# op = os.path.dirname(os.path.dirname(np))
-# sys.path.append(op)
-
-sublack = sys.modules["sublack"]
-
-blackd_proc = sublack.utils.BlackdServer()
+from fixtures import sublack, blacked, unblacked, diff
 
 
-def setUpModule():
-    # try:
-    #     requests.get("http://localhost:45484")
-    # except requests.ConnectionError:
-    global blackd_proc
-    blackd_proc.run()
-
-
-def tearDownModule():
-    global blackd_proc
-    blackd_proc.stop()
-
-
-blacked = """def get_encoding_from_file(view):
-
-    region = view.line(sublime.Region(0))
-
-    encoding = get_encoding_from_region(region, view)
-    if encoding:
-        return encoding
-    else:
-        encoding = get_encoding_from_region(view.line(region.end() + 1), view)
-        return encoding
-    return None
-"""
-
-unblacked = """
-def get_encoding_from_file( view):
-
-    region = view.line( sublime.Region(0))
-
-    encoding = get_encoding_from_region( region, view)
-    if encoding:
-        return encoding
-    else:
-        encoding = get_encoding_from_region(view.line(region.end() + 1), view)
-        return encoding
-    return None"""
-
-diff = """@@ -1,12 +1,12 @@
-+def get_encoding_from_file(view):
- 
--def get_encoding_from_file( view):
-+    region = view.line(sublime.Region(0))
- 
--    region = view.line( sublime.Region(0))
--
--    encoding = get_encoding_from_region( region, view)
-+    encoding = get_encoding_from_region(region, view)
-     if encoding:
-         return encoding
-     else:
-         encoding = get_encoding_from_region(view.line(region.end() + 1), view)
-         return encoding
-     return None
-+"""
-
-
-class TesstRien(TestCase):
-    def test_true(self):
-        self.assertTrue(True)
-
-
-# @skip("demonstrating skipping")
+# @skip('mkoomk')
 class TestBlackMethod(TestCase):
     def test_init(self):
         # test valid number of config options
@@ -263,16 +187,16 @@ class TestBlackMethod(TestCase):
         s.reset_mock()
         s.run_black.return_value = (0, b"hello\n", b"unchanged")
         c(s, "edit")
-        s.view.window.return_value.status_message.assert_called_with(
-            sublack.consts.ALREADY_FORMATED_MESSAGE
+        s.view.set_status.assert_called_with(
+            sublack.consts.STATUS_KEY, sublack.consts.ALREADY_FORMATED_MESSAGE
         )
 
         # diff alreadyformatted
         s.reset_mock()
         s.run_black.return_value = (0, b"hello\n", b"unchanged")
         c(s, "edit", ["--diff"])
-        s.view.window.return_value.status_message.assert_called_with(
-            sublack.consts.ALREADY_FORMATED_MESSAGE
+        s.view.set_status.assert_called_with(
+            sublack.consts.STATUS_KEY, sublack.consts.ALREADY_FORMATED_MESSAGE
         )
 
         # diff
@@ -280,82 +204,6 @@ class TestBlackMethod(TestCase):
         s.run_black.return_value = (0, b"hello\n", b"reformatted")
         c(s, "edit", ["--diff"])
         s.do_diff.assert_called_with("edit", b"hello\n", "utf-8")
-
-
-class TestUtils(TestCase):
-    maxDiff = None
-
-    @patch.object(sublack.utils, "sublime", return_value="premiere ligne")
-    def test_get_settings(self, subl):
-        def fake_get(param, default=None):
-            flat = {"sublack.black_on_save": True}
-            nested = {"black_debug_on": True}
-            if param == "sublack":
-                return nested
-            elif param.split(".")[0] == "sublack":
-                return flat.get(param, sublack.consts.KEY_ERROR_MARKER)
-            else:
-                raise ValueError("settings must be nested or flat sublack")
-
-        gs = sublack.utils.get_settings
-
-        subl.load_settings.return_value = {
-            "black_command": "black",
-            "black_on_save": False,
-            "black_line_length": None,
-            "black_fast": False,
-            "black_debug_on": False,
-            "black_default_encoding": "utf-8",
-            "black_skip_string_normalization": False,
-            "black_include": None,
-            "black_exclude": None,
-            "black_py36": None,
-            "black_use_blackd": False,
-            "black_blackd_host": "localhost",
-            "black_blackd_port": "45484",
-        }
-        v = MagicMock()
-        c = MagicMock()
-        v.settings.return_value = c
-        c.get = fake_get
-
-        res = {
-            "black_command": "black",
-            "black_on_save": True,
-            "black_line_length": None,
-            "black_fast": False,
-            "black_debug_on": True,
-            "black_default_encoding": "utf-8",
-            "black_skip_string_normalization": False,
-            "black_include": None,
-            "black_py36": None,
-            "black_exclude": None,
-            "black_use_blackd": False,
-            "black_blackd_host": "localhost",
-            "black_blackd_port": "45484",
-        }
-
-        # settings are all from setting file except on_save
-        self.assertDictEqual(res, gs(v))
-
-    def test_get_encoding_from_region(self):
-        v = MagicMock()
-        v.substr.return_value = "mkplpùlùplùplù"
-        x = sublack.utils.get_encoding_from_region(1, v)
-        self.assertEqual(x, None)
-        v.substr.return_value = "# -*- coding: latin-1 -*-"
-        x = sublack.utils.get_encoding_from_region(1, v)
-        self.assertEqual(x, "latin-1")
-
-    @patch.object(
-        sublack.utils, "get_encoding_from_region", return_value="premiere ligne"
-    )
-    def test_encoding_from_file(self, m):
-        e = sublack.utils.get_encoding_from_file(MagicMock())
-        self.assertEqual(e, "premiere ligne")
-        m.side_effect = [None, "deuxieme ligne"]
-        e = sublack.utils.get_encoding_from_file(MagicMock())
-        self.assertEqual(e, "deuxieme ligne")
 
 
 # @skip("demonstrating skipping")
@@ -390,6 +238,10 @@ class TestBlack(TestCase):
         self.setText(blacked)
         self.view.run_command("black_file")
         self.assertEqual(blacked, self.all())
+        self.assertEqual(
+            self.view.get_status(sublack.consts.STATUS_KEY),
+            sublack.consts.ALREADY_FORMATED_MESSAGE,
+        )
 
     def test_dirty_stay_dirty(self, s):
         self.setText(blacked)
@@ -408,79 +260,6 @@ class TestBlack(TestCase):
         backup = self.view
         self.view.run_command("black_diff")
 
-        w = sublime.active_window()
-        v = w.active_view()
-        res = sublime.Region(0, v.size())
-        res = sublime.Region(v.lines(res)[2].begin(), v.size())
-        res = v.substr(res).strip()
-        self.assertEqual(res, diff)
-        self.assertEqual(
-            v.settings().get("syntax"), "Packages/Diff/Diff.sublime-syntax"
-        )
-        self.view = backup
-        v.set_scratch(True)
-        v.close()
-
-
-BASE_SETTINGS = {
-    "black_command": "black",
-    "black_on_save": True,
-    "black_line_length": None,
-    "black_fast": False,
-    "black_debug_on": True,
-    "black_default_encoding": "utf-8",
-    "black_skip_string_normalization": False,
-    "black_include": None,
-    "black_py36": None,
-    "black_exclude": None,
-    "black_use_blackd": True,
-    "black_blackd_host": "localhost",
-    "black_blackd_port": blackd_proc.port,
-}
-
-# @skip("traivs")
-@patch.object(sublack.commands, "is_python", return_value=True)
-@patch.object(sublack.blacker, "get_settings", return_value=BASE_SETTINGS)
-class TestBlackdServer(TestCase):
-    def setUp(self):
-        self.view = sublime.active_window().new_file()
-        # make sure we have a window to work with
-        s = sublime.load_settings("Preferences.sublime-settings")
-        s.set("close_windows_when_empty", False)
-
-    def tearDown(self):
-        if self.view:
-            self.view.set_scratch(True)
-            self.view.window().focus_view(self.view)
-            self.view.window().run_command("close_file")
-
-    def all(self):
-        all_file = sublime.Region(0, self.view.size())
-        return self.view.substr(all_file)
-
-    def setText(self, string):
-        self.view.run_command("append", {"characters": string})
-
-    # def test_fail(self, s):
-    #     self.assertEqual(True, self.view.settings().get("black_use_blackd"))
-
-    def test_blacked(self, s, c):
-        self.setText(unblacked)
-        self.view.run_command("black_file")
-        self.assertEqual(blacked, self.all())
-
-    def test_nothing_todo(self, s, c):
-        self.setText(blacked)
-        self.view.run_command("black_file")
-        self.assertEqual(blacked, self.all())
-
-    def test_do_diff(self, s, c):
-        """"sould be called evenv blacked"""
-
-        self.setText(unblacked)
-        self.view.set_name("base")
-        backup = self.view
-        self.view.run_command("black_diff")
         w = sublime.active_window()
         v = w.active_view()
         res = sublime.Region(0, v.size())

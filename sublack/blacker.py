@@ -13,7 +13,7 @@ import requests
 
 import logging
 
-from .consts import HEADERS_TABLE, ALREADY_FORMATED_MESSAGE
+from .consts import HEADERS_TABLE, ALREADY_FORMATED_MESSAGE, STATUS_KEY
 from .utils import get_settings, get_encoding_from_file
 
 LOG = logging.getLogger("sublack")
@@ -70,11 +70,13 @@ class Blackd:
         )
         try:
             response = requests.post(url, data=self.content, headers=self.headers)
-        except Exception:
-            print("respon.conten", response.content)
-
+        except Exception as err:
+            response = requests.Response()
+            response.status_code = 500
+            response._content = str(err).encode()
+            print(str(err))
+        
         return self.process_response(response)
-
 
 class Black:
     """
@@ -253,7 +255,7 @@ class Black:
 
         # already formated, nothing changes
         elif "unchanged" in error_message:
-            self.view.window().status_message(ALREADY_FORMATED_MESSAGE)
+            self.view.set_status(STATUS_KEY,  ALREADY_FORMATED_MESSAGE)
 
         # diff mode
         elif "--diff" in extra:

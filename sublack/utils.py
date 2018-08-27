@@ -71,8 +71,8 @@ def get_encoding_from_file(view):
 class BlackdServer:
     def __init__(self, host="localhost", port=None):
         if not port:
-            # self.port = str(45486)
-            self.port = str(self.get_open_port())
+            self.port = str(45484)
+            # self.port = str(self.get_open_port())
             print(self.port)
         self.host = host
         self.proc = None
@@ -85,9 +85,10 @@ class BlackdServer:
 
         if self.platform in ["linux", "osx"]:
             self.proc = subprocess.Popen(
-                cmd, preexec_fn=os.setsid
-                # cmd, stdout=subprocess.PIPE, preexec_fn=os.setsid
+                # cmd, preexec_fn=os.setsid
+                cmd, stdout=subprocess.PIPE, preexec_fn=os.setsid
             )
+
             LOG.debug("plaform linux for blackserver")
         elif self.platform == "windows":
             self.proc = subprocess.Popen(
