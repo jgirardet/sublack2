@@ -80,12 +80,13 @@ class BlackdServer:
 
         self.proc = subprocess.Popen(
             ["blackd"], stdout=subprocess.PIPE, shell=True, preexec_fn=os.setsid
-        # )
-        LOG.info(
-            "blackd running at {} on port {} with pid {}".format(
-                self.host, self.port, self.proc.pid
-            )
         )
+        # LOG.info(
+        #     "blackd running at {} on port {} with pid {}".format(
+        #         self.host, self.port, self.proc.pid
+        #     )
+        LOG.info('omk')
+        
 
     def stop(self):
         os.killpg(os.getpgid(self.proc.pid), signal.SIGTERM)
