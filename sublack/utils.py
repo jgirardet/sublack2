@@ -100,7 +100,11 @@ class BlackdServer:
         if self.platform == "linux":
             os.killpg(os.getpgid(self.proc.pid), signal.SIGTERM)
         elif self.platform == "windows":
-            self.proc.send_signal(signal.CTRL_BREAK_EVENT)
+            try:
+                self.proc.send_signal(signal.CTRL_BREAK_EVENT)
+            except PermissionError:
+                pass
+            
 
     def get_open_port(self):
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
