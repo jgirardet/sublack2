@@ -13,6 +13,7 @@ def setUpModule():
     global blackd_proc
     blackd_proc.run()
     time.sleep(0.5)  # wait server on, need to be raised if TestBlack.blacked fails
+    
     ci = os.environ.get("CI", None)
     if ci:
         print("waiting Blackserver Up")
