@@ -4,7 +4,7 @@ from unittest.mock import patch
 import sublime
 from fixtures import sublack, blacked, unblacked, diff
 
-blackd_proc = sublack.utils.BlackdServer()
+blackd_proc = sublack.server.BlackdServer()
 
 
 def setUpModule():
@@ -31,8 +31,7 @@ BASE_SETTINGS = {
     "black_exclude": None,
     "black_use_blackd": True,
     "black_blackd_host": "localhost",
-    # "black_blackd_port": blackd_proc.port,
-    "black_blackd_port": "45484",
+    "black_blackd_port": blackd_proc.port,
 }
 
 
@@ -58,19 +57,12 @@ class TestBlackdServer(TestCase):
     def setText(self, string):
         self.view.run_command("append", {"characters": string})
 
-    # def test_fail(self, s):
-    #     self.assertEqual(True, self.view.settings().get("black_use_blackd"))
 
     def test_blacked(self, s, c):
         self.setText(unblacked)
         self.view.run_command("black_file")
         self.assertEqual(blacked, self.all())
 
-    # def test_syntax_error(self, s, c):
-    #     self.setText("print(1")
-    #     self.view.run_command("black_file")
-    #     self.view.window().status_message()
-    #     self.assertEqual(blacked, self.all())
 
     def test_nothing_todo(self, s, c):
         self.setText(blacked)
