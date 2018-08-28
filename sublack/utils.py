@@ -4,6 +4,8 @@ import sublime
 import os
 import signal
 import socket
+import requests
+import time
 from .consts import (
     CONFIG_OPTIONS,
     ENCODING_PATTERN,
@@ -78,6 +80,27 @@ class BlackdServer:
         self.proc = None
         self.platform = sublime.platform()
 
+    def is_running(self):
+        # check server running
+        started = time.time()
+        while time.time() - started < 5:  # timeout 5 s
+            try:
+                requests.post("http://" + self.host + ":" + self.port)
+            except requests.ConnectionError:
+                time.sleep(0.2)
+            else:
+                LOG.info(
+                    "blackd running at {} on port {} with pid {}".format(
+                        self.host, self.port, self.proc.pid
+                    )
+                )
+
+                return True
+        LOG.info(
+            "failed to start blackd at {} on port {}}".format(self.host, self.port)
+        )
+        return False
+
     def run(self):
         # use this complexity to properly terminate blackd
 
@@ -85,21 +108,18 @@ class BlackdServer:
 
         if self.platform in ["linux", "osx"]:
             self.proc = subprocess.Popen(
-                # cmd, preexec_fn=os.setsid
                 cmd, stdout=subprocess.PIPE, preexec_fn=os.setsid
             )
 
             LOG.debug("plaform linux for blackserver")
+
         elif self.platform == "windows":
             self.proc = subprocess.Popen(
                 cmd, creationflags=subprocess.CREATE_NEW_PROCESS_GROUP
             )
             LOG.debug("plaform windows for blackserver")
-        LOG.info(
-            "blackd running at {} on port {} with pid {}".format(
-                self.host, self.port, self.proc.pid
-            )
-        )
+
+        return self.is_running()
 
     def stop(self):
         if self.platform in ["linux", "osx"]:
