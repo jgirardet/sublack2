@@ -1,7 +1,5 @@
 from unittest import TestCase
 from unittest.mock import patch
-import time
-import os
 
 import sublime
 from fixtures import sublack, blacked, unblacked, diff
@@ -12,12 +10,7 @@ blackd_proc = sublack.utils.BlackdServer()
 def setUpModule():
     global blackd_proc
     if not blackd_proc.run():
-        raise IOError('blackd server not running')
-    
-    # ci = os.environ.get("CI", None)
-    # if ci:
-    #     print("waiting Blackserver Up")
-    #     time.sleep(2)
+        raise IOError("blackd server not running")
 
 
 def tearDownModule():

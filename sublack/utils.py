@@ -1,8 +1,6 @@
 import re
 import subprocess
 import sublime
-import os
-import signal
 import socket
 import requests
 import time
@@ -108,32 +106,10 @@ class BlackdServer:
 
         self.proc = subprocess.Popen(cmd)
 
-
-
-        # if self.platform in ["linux", "osx"]:
-        #     self.proc = subprocess.Popen(
-        #         cmd, stdout=subprocess.PIPE, preexec_fn=os.setsid
-        #     )
-
-        #     LOG.debug("plaform linux for blackserver")
-
-        # elif self.platform == "windows":
-        #     self.proc = subprocess.Popen(
-        #         cmd, creationflags=subprocess.CREATE_NEW_PROCESS_GROUP
-        #     )
-        #     LOG.debug("plaform windows for blackserver")
-
         return self.is_running()
 
     def stop(self):
         self.proc.terminate()
-        # if self.platform in ["linux", "osx"]:
-        #     os.killpg(os.getpgid(self.proc.pid), signal.SIGTERM)
-        # elif self.platform == "windows":
-        #     try:
-        #         self.proc.send_signal(signal.CTRL_BREAK_EVENT)
-        #     except PermissionError:
-        #         pass
 
     def get_open_port(self):
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
