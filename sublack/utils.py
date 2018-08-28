@@ -108,6 +108,8 @@ class BlackdServer:
 
         self.proc = subprocess.Popen(cmd)
 
+
+
         # if self.platform in ["linux", "osx"]:
         #     self.proc = subprocess.Popen(
         #         cmd, stdout=subprocess.PIPE, preexec_fn=os.setsid
