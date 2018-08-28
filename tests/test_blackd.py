@@ -11,7 +11,7 @@ blackd_proc = sublack.utils.BlackdServer()
 def setUpModule():
     global blackd_proc
     blackd_proc.run()
-    time.sleep(0.5)  # wait server on
+    time.sleep(1)  # wait server on
 
 
 def tearDownModule():
