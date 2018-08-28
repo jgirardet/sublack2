@@ -11,7 +11,8 @@ blackd_proc = sublack.utils.BlackdServer()
 
 def setUpModule():
     global blackd_proc
-    blackd_proc.run()
+    if not blackd_proc.run():
+        raise IOError('blackd server not running')
     
     # ci = os.environ.get("CI", None)
     # if ci:
