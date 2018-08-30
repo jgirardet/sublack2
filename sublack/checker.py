@@ -50,5 +50,6 @@ class Checker:
 
 if __name__ == "__main__":
 
-    proc = sys.argv[1]
-    Checker("plugin_host", int(proc)).run()
+    watched = sys.argv[1]
+    proc = sys.argv[2]
+    Checker(watched, int(proc)).run()

@@ -1,3 +1,5 @@
+import sublime
+import pathlib
 
 PACKAGE_NAME = "sublack"
 SETTINGS_FILE_NAME = "{}.sublime-settings".format(PACKAGE_NAME)

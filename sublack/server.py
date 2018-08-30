@@ -4,10 +4,12 @@ import socket
 import requests
 import time
 import os
-
+from pathlib import Path
 import logging
 
 LOG = logging.getLogger("sublack")
+
+from .consts import CACHE_PATH
 
 
 class BlackdServer:
@@ -18,6 +20,7 @@ class BlackdServer:
         self.proc = None
         self.platform = sublime.platform()
         self.deamon = deamon
+        self.cache_path = 
 
     def is_running(self):
         # check server running
@@ -40,6 +43,11 @@ class BlackdServer:
         )
         return False
 
+    def write_cache(self, pid):
+        cp = Path(sublime.cache_path(), "Sublack", str(pid))
+        LOG.info("CONST : %s  fait: %s", CACHE_PATH, cp)
+        cp.touch()
+
     def run(self):
         # use this complexity to properly terminate blackd
 
@@ -50,7 +58,11 @@ class BlackdServer:
         if self.deamon:
             cwd = os.path.dirname(os.path.abspath(__file__))
             LOG.info("Running checker from directory %s", cwd)
-            subprocess.Popen(["python3", "checker.py", str(self.proc.pid)], cwd=cwd)
+            subprocess.Popen(
+                ["python3", "checker.py", "gnome-calculator", str(self.proc.pid)],
+                cwd=cwd,
+            )
+            self.write_cache(self.proc.pid)
 
         return self.is_running()
 

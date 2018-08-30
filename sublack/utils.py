@@ -10,6 +10,7 @@ from .consts import (
 )
 
 import logging
+import pathlib
 
 LOG = logging.getLogger("sublack")
 
@@ -63,3 +64,6 @@ def get_encoding_from_file(view):
         return encoding
     return None
 
+
+def cache_path():
+    return pathlib.Path(sublime.cache_path(), PACKAGE_NAME)

@@ -2,6 +2,7 @@ import sys
 
 import logging
 import sublime
+import pathlib
 
 from .sublack import *  # noqa
 
@@ -23,3 +24,10 @@ def plugin_loaded():
     config = sublack.utils.get_settings(current_view)
     if config["black_debug_on"]:
         LOG.setLevel(logging.DEBUG)
+
+    # check cache_path
+    from sublack.consts import CACHE_PATH
+
+    cache_path = pathlib.Path(CACHE_PATH)
+    if not cache_path.exists():
+        cache_path.mkdir()
