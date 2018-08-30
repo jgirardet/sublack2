@@ -74,9 +74,10 @@ class Blackd:
             response = requests.Response()
             response.status_code = 500
             response._content = str(err).encode()
-            print(str(err))
-        
+            LOG.exception("Request to  Blackd failed")
+
         return self.process_response(response)
+
 
 class Black:
     """
@@ -255,7 +256,7 @@ class Black:
 
         # already formated, nothing changes
         elif "unchanged" in error_message:
-            self.view.set_status(STATUS_KEY,  ALREADY_FORMATED_MESSAGE)
+            self.view.set_status(STATUS_KEY, ALREADY_FORMATED_MESSAGE)
 
         # diff mode
         elif "--diff" in extra:

@@ -1,9 +1,5 @@
 import re
-import subprocess
 import sublime
-import os
-import signal
-import socket
 from .consts import (
     CONFIG_OPTIONS,
     ENCODING_PATTERN,
@@ -67,53 +63,3 @@ def get_encoding_from_file(view):
         return encoding
     return None
 
-
-class BlackdServer:
-    def __init__(self, host="localhost", port=None):
-        if not port:
-            self.port = str(45484)
-            # self.port = str(self.get_open_port())
-            print(self.port)
-        self.host = host
-        self.proc = None
-        self.platform = sublime.platform()
-
-    def run(self):
-        # use this complexity to properly terminate blackd
-
-        cmd = ["blackd", "--bind-port", self.port]
-
-        if self.platform in ["linux", "osx"]:
-            self.proc = subprocess.Popen(
-                # cmd, preexec_fn=os.setsid
-                cmd, stdout=subprocess.PIPE, preexec_fn=os.setsid
-            )
-
-            LOG.debug("plaform linux for blackserver")
-        elif self.platform == "windows":
-            self.proc = subprocess.Popen(
-                cmd, creationflags=subprocess.CREATE_NEW_PROCESS_GROUP
-            )
-            LOG.debug("plaform windows for blackserver")
-        LOG.info(
-            "blackd running at {} on port {} with pid {}".format(
-                self.host, self.port, self.proc.pid
-            )
-        )
-
-    def stop(self):
-        if self.platform in ["linux", "osx"]:
-            os.killpg(os.getpgid(self.proc.pid), signal.SIGTERM)
-        elif self.platform == "windows":
-            try:
-                self.proc.send_signal(signal.CTRL_BREAK_EVENT)
-            except PermissionError:
-                pass
-
-    def get_open_port(self):
-        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        print("après socket")
-        s.bind(("", 0))
-        port = s.getsockname()[1]
-        s.close()
-        return port
