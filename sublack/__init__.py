@@ -7,6 +7,7 @@ from .commands import (
     BlackDiffCommand,
     BlackToggleBlackOnSaveCommand,
     EventListener,
+    BlackdStartCommand,
 )
 
 
@@ -19,4 +20,5 @@ __all__ = [
     "BlackDiffCommand",
     "BlackToggleBlackOnSaveCommand",
     "EventListener",
+    "BlackdStartCommand",
 ]

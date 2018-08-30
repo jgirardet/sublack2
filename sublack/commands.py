@@ -3,7 +3,7 @@ from .consts import BLACK_ON_SAVE_VIEW_SETTING, STATUS_KEY
 from .utils import get_settings
 from .blacker import Black
 import logging
-
+from .server import BlackdServer
 
 LOG = logging.getLogger("sublack")
 
@@ -82,6 +82,17 @@ class BlackToggleBlackOnSaveCommand(sublime_plugin.TextCommand):
         # that this view now deviates from the other views.
         view.settings().set(BLACK_ON_SAVE_VIEW_SETTING, next_state)
         view.set_status(STATUS_KEY, "black: {}".format("ON" if next_state else "OFF"))
+
+
+class BlackdStartCommand(sublime_plugin.ApplicationCommand):
+    def is_enabled(self):
+        return True
+
+    is_visible = is_enabled
+
+    def run(self):
+        sv = BlackdServer(deamon=True)
+        sv.run()
 
 
 class EventListener(sublime_plugin.EventListener):
