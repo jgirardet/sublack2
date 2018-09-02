@@ -35,6 +35,7 @@ class TestUtils(TestCase):
             "black_use_blackd": False,
             "black_blackd_host": "localhost",
             "black_blackd_port": "45484",
+            "black_blackd_autostart": False,
         }
         v = MagicMock()
         c = MagicMock()
@@ -55,6 +56,7 @@ class TestUtils(TestCase):
             "black_use_blackd": False,
             "black_blackd_host": "localhost",
             "black_blackd_port": "45484",
+            "black_blackd_autostart": False,
         }
 
         # settings are all from setting file except on_save

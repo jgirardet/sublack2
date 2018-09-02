@@ -1,3 +1,4 @@
+import signal
 import subprocess
 import sublime
 import socket
@@ -9,18 +10,20 @@ import logging
 
 LOG = logging.getLogger("sublack")
 
-from .consts import CACHE_PATH
+from .utils import cache_path
 
 
 class BlackdServer:
     def __init__(self, host="localhost", port=None, deamon=False):
         if not port:
             self.port = str(self.get_open_port())
+        else:
+            self.port = port
         self.host = host
         self.proc = None
         self.platform = sublime.platform()
         self.deamon = deamon
-        self.cache_path = 
+        self.pid_path = cache_path() / "pid"
 
     def is_running(self):
         # check server running
@@ -44,23 +47,27 @@ class BlackdServer:
         return False
 
     def write_cache(self, pid):
-        cp = Path(sublime.cache_path(), "Sublack", str(pid))
-        LOG.info("CONST : %s  fait: %s", CACHE_PATH, cp)
-        cp.touch()
+        LOG.debug("write cache  %s", pid)
+        with self.pid_path.open("w") as f:
+            f.write(str(pid))
+
+    def get_cache(self):
+        return int(self.pid_path.open().read())
 
     def run(self):
-        # use this complexity to properly terminate blackd
 
         cmd = ["blackd", "--bind-port", self.port]
 
         self.proc = subprocess.Popen(cmd)
 
         if self.deamon:
+            watched = "plugin_host"
             cwd = os.path.dirname(os.path.abspath(__file__))
-            LOG.info("Running checker from directory %s", cwd)
+            LOG.debug(
+                "Running checker watched = %s and proc = %s", watched, self.proc.pid
+            )
             subprocess.Popen(
-                ["python3", "checker.py", "gnome-calculator", str(self.proc.pid)],
-                cwd=cwd,
+                ["python3", "checker.py", watched, str(self.proc.pid)], cwd=cwd
             )
             self.write_cache(self.proc.pid)
 
@@ -69,6 +76,14 @@ class BlackdServer:
     def stop(self):
         self.proc.terminate()
         LOG.info("blackd shutdown")
+
+    def stop_from_cache(self):
+        LOG.info("blackd halted from cache")
+        try:
+            os.kill(self.get_cache(), signal.SIGTERM)
+        except ValueError:
+            LOG.debug("No pid in cache")
+        self.write_cache("")
 
     def get_open_port(self):
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)

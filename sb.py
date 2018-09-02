@@ -25,9 +25,13 @@ def plugin_loaded():
     if config["black_debug_on"]:
         LOG.setLevel(logging.DEBUG)
 
-    # check cache_path
-    from sublack.consts import CACHE_PATH
+    # # check cache_path
+    from sublack.utils import cache_path
 
-    cache_path = pathlib.Path(CACHE_PATH)
-    if not cache_path.exists():
-        cache_path.mkdir()
+    cp = cache_path()
+    if not cp.exists():
+        cp.mkdir()
+
+    # check blackd autostart
+    if config["black_blackd_autostart"]:
+        current_view.run_command("blackd_start")

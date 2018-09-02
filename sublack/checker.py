@@ -19,8 +19,19 @@ class Checker:
             return True
 
     def is_running_unix(self):
-        if self.watched in subprocess.check_output(["ps", "x"]):
-            return True
+
+        try:
+            os.getpgid(self.target)
+        except ProcessLookupError:
+            return False
+
+        is_running = [
+            line
+            for line in subprocess.check_output(["ps", "x"]).split(b"\n")
+            if self.watched in line
+            and b"checker.py" not in line  # not look at checker args
+        ]
+        return bool(is_running)
 
     def _set_platform(self):
         plat = platform.system()
@@ -41,7 +52,10 @@ class Checker:
                 return
 
     def terminate_target(self):
-        os.kill(self.target, signal.SIGTERM)
+        try:
+            os.kill(self.target, signal.SIGTERM)
+        except ProcessLookupError:
+            print("Process {} already terminated".format(self.target))
 
     def run(self):
         self.watch()
@@ -52,4 +66,5 @@ if __name__ == "__main__":
 
     watched = sys.argv[1]
     proc = sys.argv[2]
+    print("running checker", watched, proc)
     Checker(watched, int(proc)).run()

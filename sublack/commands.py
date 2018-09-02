@@ -1,4 +1,5 @@
 import sublime_plugin
+import sublime
 from .consts import BLACK_ON_SAVE_VIEW_SETTING, STATUS_KEY
 from .utils import get_settings
 from .blacker import Black
@@ -84,15 +85,26 @@ class BlackToggleBlackOnSaveCommand(sublime_plugin.TextCommand):
         view.set_status(STATUS_KEY, "black: {}".format("ON" if next_state else "OFF"))
 
 
-class BlackdStartCommand(sublime_plugin.ApplicationCommand):
+class BlackdStartCommand(sublime_plugin.TextCommand):
+    def is_enabled(self):
+        return True
+
+    is_visible = is_enabled
+
+    def run(self, edit):
+        port = get_settings(self.view)["black_blackd_port"]
+        sv = BlackdServer(deamon=True, host="localhost", port=port)
+        sv.run()
+
+
+class BlackdStopCommand(sublime_plugin.ApplicationCommand):
     def is_enabled(self):
         return True
 
     is_visible = is_enabled
 
     def run(self):
-        sv = BlackdServer(deamon=True)
-        sv.run()
+        BlackdServer().stop_from_cache()
 
 
 class EventListener(sublime_plugin.EventListener):
