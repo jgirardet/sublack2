@@ -33,5 +33,5 @@ def plugin_loaded():
         cp.mkdir()
 
     # check blackd autostart
-    if config["black_blackd_autostart"]:
-        current_view.run_command("blackd_start")
+    # if config["black_blackd_autostart"]:
+    #     current_view.run_command("blackd_start")

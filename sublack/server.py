@@ -54,11 +54,26 @@ class BlackdServer:
     def get_cache(self):
         return int(self.pid_path.open().read())
 
+    def _run_blackd(self, cmd):
+        try:
+            proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            out, err = proc.communicate(timeout=1)
+        except subprocess.TimeoutExpired:
+            LOG.info("BlackdServer démarré sur le port {}".format(cmd[2]))
+            out, err = True, None
+        else:
+            LOG.info("Erreur du démmmarrage {}".format(err.decode()))  # show stderr
+
+        return proc, out, err
+
     def run(self):
 
         cmd = ["blackd", "--bind-port", self.port]
 
-        self.proc = subprocess.Popen(cmd)
+        self.proc, out, err = self._run_blackd(cmd)
+
+        if err:
+            return False
 
         if self.deamon:
             watched = "plugin_host"
