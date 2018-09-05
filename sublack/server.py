@@ -105,7 +105,7 @@ class BlackdServer:
 
         return self.is_running()
 
-    def stop(self, pid):
+    def stop(self, pid=None):
         if self.platform == "windows":
             # need to properly kill precess traa
             subprocess.call(["taskkill", "/F", "/T", "/PID", str(pid)])

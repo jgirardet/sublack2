@@ -57,12 +57,10 @@ class TestBlackdServer(TestCase):
     def setText(self, string):
         self.view.run_command("append", {"characters": string})
 
-
     def test_blacked(self, s, c):
         self.setText(unblacked)
         self.view.run_command("black_file")
         self.assertEqual(blacked, self.all())
-
 
     def test_nothing_todo(self, s, c):
         self.setText(blacked)
