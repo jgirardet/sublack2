@@ -5,12 +5,13 @@ import socket
 import requests
 import time
 import os
+import sys
 from pathlib import Path
 import logging
 
 LOG = logging.getLogger("sublack")
 
-from .utils import cache_path
+from .utils import cache_path, windows_popen_prepare
 
 
 class BlackdServer:
@@ -47,16 +48,32 @@ class BlackdServer:
         return False
 
     def write_cache(self, pid):
-        LOG.debug("write cache  %s", pid)
         with self.pid_path.open("w") as f:
             f.write(str(pid))
+        LOG.debug('write cache  "%s"', pid)
 
-    def get_cache(self):
+    def get_cached_pid(self):
         return int(self.pid_path.open().read())
 
     def _run_blackd(self, cmd):
         try:
-            proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            if self.platform == "windows":
+                st = subprocess.STARTUPINFO()
+                st.dwFlags = (
+                    subprocess.STARTF_USESHOWWINDOW
+                    | subprocess.CREATE_NEW_PROCESS_GROUP
+                )
+                st.wShowWindow = subprocess.SW_HIDE
+
+            else:
+                st = None
+            proc = subprocess.Popen(
+                cmd,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                startupinfo=st,
+                # creationflags = subprocess.CREATE_NEW_PROCESS_GROUP
+            )
             out, err = proc.communicate(timeout=1)
         except subprocess.TimeoutExpired:
             LOG.info("BlackdServer démarré sur le port {}".format(cmd[2]))
@@ -82,22 +99,33 @@ class BlackdServer:
                 "Running checker watched = %s and proc = %s", watched, self.proc.pid
             )
             subprocess.Popen(
-                ["python3", "checker.py", watched, str(self.proc.pid)], cwd=cwd
+                [sys.executable, "checker.py", watched, str(self.proc.pid)], cwd=cwd
             )
             self.write_cache(self.proc.pid)
 
         return self.is_running()
 
-    def stop(self):
-        self.proc.terminate()
+    def stop(self, pid):
+        if self.platform == "windows":
+            # need to properly kill precess traa
+            subprocess.call(["taskkill", "/F", "/T", "/PID", str(pid)])
+        else:
+            if self.proc:
+                self.proc.terminate()
+            else:
+                os.kill(pid, signal.SIGTERM)
         LOG.info("blackd shutdown")
 
     def stop_from_cache(self):
-        LOG.info("blackd halted from cache")
         try:
-            os.kill(self.get_cache(), signal.SIGTERM)
+            pid = self.get_cached_pid()
         except ValueError:
             LOG.debug("No pid in cache")
+        except FileNotFoundError:
+            LOG.debug("Cache file not found")
+        else:
+            self.stop(pid)
+            LOG.info("blackd halted from cache")
         self.write_cache("")
 
     def get_open_port(self):

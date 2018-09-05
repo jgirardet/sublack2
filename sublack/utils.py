@@ -11,6 +11,7 @@ from .consts import (
 
 import logging
 import pathlib
+import subprocess
 
 LOG = logging.getLogger("sublack")
 
@@ -67,3 +68,18 @@ def get_encoding_from_file(view):
 
 def cache_path():
     return pathlib.Path(sublime.cache_path(), PACKAGE_NAME)
+
+
+def windows_popen_prepare():
+    # win32: hide console window
+    if sublime.platform() == "windows":
+        startup_info = subprocess.STARTUPINFO()
+        startup_info.dwFlags = (
+            # subprocess.CREATE_NEW_CONSOLE #| subprocess.STARTF_USESHOWWINDOW
+            # subprocess.CREATE_NEW_CONSOLE | subprocess.STARTF_USESHOWWINDOW
+            subprocess.CREATE_NEW_PROCESS_GROUP
+        )
+        startup_info.wShowWindow = subprocess.SW_HIDE
+    else:
+        startup_info = None
+        return startup_info
