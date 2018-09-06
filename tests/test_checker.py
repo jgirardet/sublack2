@@ -150,7 +150,7 @@ class TestRunWindows(TestCase):
         self.t = s.Popen(["CHOICE", "/C:AB", "/T:A,10"])
 
         self.p = s.Popen(
-            ["python3", "checker.py", "sleep", str(self.t.pid), "0"],
+            ["python3", "checker.py", "timeout", str(self.t.pid), "0"],
             cwd=str(sublack_dir),
         )
 
