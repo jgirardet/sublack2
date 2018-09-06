@@ -1,16 +1,18 @@
 import time
 import subprocess
 import platform
-import sys
 import os
 import signal
 import re
+import argparse
+
 
 class Checker:
-    def __init__(self, watched: str, target: int):
+    def __init__(self, watched: str, target: str, interval: str = "5"):
 
         self.watched = watched.encode()
-        self.target = target
+        self.target = int(target)
+        self.interval = int(interval)
 
         self.is_running = self._set_platform()
 
@@ -23,8 +25,6 @@ class Checker:
         target_found = False
 
         for task in tasklist:
-            if watched_found and target_found:
-                return True
 
             if r_watched.match(task):
                 watched_found = True
@@ -32,22 +32,34 @@ class Checker:
             if r_target.match(task):
                 target_found = True
 
+            if watched_found and target_found:
+                return True
         return False
 
     def is_running_unix(self):
 
-        try:
-            os.getpgid(self.target)
-        except ProcessLookupError:
-            return False
+        tasklist = subprocess.check_output(["ps", "-x"]).strip().split(b"\n")
 
-        is_running = [
-            line
-            for line in subprocess.check_output(["ps", "x"]).split(b"\n")
-            if self.watched in line
-            and b"checker.py" not in line  # not look at checker args
-        ]
-        return bool(is_running)
+        watched_found = False
+        target_found = False
+
+        for task in tasklist:
+
+            splitted = task.split(maxsplit=4)
+
+            if (
+                self.watched in splitted[4]
+                and b"checker.py" not in splitted[4]
+                and splitted[2] != b"Z"
+            ):
+                watched_found = True
+
+            if str(self.target).encode() == splitted[0] and splitted[2] != b"Z":
+                target_found = True
+
+            if watched_found and target_found:
+                return True
+        return False
 
     def _set_platform(self):
         plat = platform.system()
@@ -63,7 +75,7 @@ class Checker:
     def watch(self):
 
         while True:
-            time.sleep(5)
+            time.sleep(self.interval)
             if not self.is_running():
                 return
 
@@ -76,12 +88,21 @@ class Checker:
     def run(self):
         self.watch()
         self.terminate_target()
-    
 
 
 if __name__ == "__main__":
 
-    watched = sys.argv[1]
-    proc = sys.argv[2]
-    print("running checker", watched, proc)
-    Checker(watched, int(proc)).run()
+    parser = argparse.ArgumentParser(description="checker")
+    parser.add_argument("watched", type=str, help="Watched program's name")
+    parser.add_argument("target", type=int, help="target's pid")
+    parser.add_argument(
+        "interval",
+        nargs="?",
+        type=int,
+        help="interval between each check, default is 5",
+    )
+
+    args = parser.parse_args()
+
+    print("running checker", vars(args))
+    Checker(**vars(args)).run()
