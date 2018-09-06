@@ -8,10 +8,9 @@ import os
 import sys
 from pathlib import Path
 import logging
+from .utils import cache_path, startup_info
 
 LOG = logging.getLogger("sublack")
-
-from .utils import cache_path, windows_popen_prepare
 
 
 class BlackdServer:
@@ -57,21 +56,11 @@ class BlackdServer:
 
     def _run_blackd(self, cmd):
         try:
-            if self.platform == "windows":
-                st = subprocess.STARTUPINFO()
-                st.dwFlags = (
-                    subprocess.STARTF_USESHOWWINDOW
-                    | subprocess.CREATE_NEW_PROCESS_GROUP
-                )
-                st.wShowWindow = subprocess.SW_HIDE
-
-            else:
-                st = None
             proc = subprocess.Popen(
                 cmd,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
-                startupinfo=st,
+                startupinfo=startup_info(),
                 # creationflags = subprocess.CREATE_NEW_PROCESS_GROUP
             )
             out, err = proc.communicate(timeout=1)
@@ -108,7 +97,9 @@ class BlackdServer:
     def stop(self, pid=None):
         if self.platform == "windows":
             # need to properly kill precess traa
-            subprocess.call(["taskkill", "/F", "/T", "/PID", str(pid)])
+            subprocess.call(
+                ["taskkill", "/F", "/T", "/PID", str(pid)], startupinfo=startup_info()
+            )
         else:
             if self.proc:
                 self.proc.terminate()

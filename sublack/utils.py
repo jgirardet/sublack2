@@ -70,16 +70,14 @@ def cache_path():
     return pathlib.Path(sublime.cache_path(), PACKAGE_NAME)
 
 
-def windows_popen_prepare():
-    # win32: hide console window
+def startup_info():
+    "running windows process in background"
     if sublime.platform() == "windows":
-        startup_info = subprocess.STARTUPINFO()
-        startup_info.dwFlags = (
-            # subprocess.CREATE_NEW_CONSOLE #| subprocess.STARTF_USESHOWWINDOW
-            # subprocess.CREATE_NEW_CONSOLE | subprocess.STARTF_USESHOWWINDOW
-            subprocess.CREATE_NEW_PROCESS_GROUP
+        st = subprocess.STARTUPINFO()
+        st.dwFlags = (
+            subprocess.STARTF_USESHOWWINDOW | subprocess.CREATE_NEW_PROCESS_GROUP
         )
-        startup_info.wShowWindow = subprocess.SW_HIDE
+        st.wShowWindow = subprocess.SW_HIDE
+        return st
     else:
-        startup_info = None
-        return startup_info
+        return None

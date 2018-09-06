@@ -4,7 +4,7 @@ import platform
 import sys
 import os
 import signal
-
+import re
 
 class Checker:
     def __init__(self, watched: str, target: int):
@@ -15,8 +15,24 @@ class Checker:
         self.is_running = self._set_platform()
 
     def is_running_windows(self):
-        if self.watched + b".exe" in subprocess.check_output(["tasklist"]):
-            return True
+        tasklist = subprocess.check_output(["tasklist", "/FO", "CSV"]).split(b"\r\n")
+        r_watched = re.compile(rb'"%b\.exe"' % self.watched)
+        r_target = re.compile(rb'".+","%b"' % str(self.target).encode())
+
+        watched_found = False
+        target_found = False
+
+        for task in tasklist:
+            if watched_found and target_found:
+                return True
+
+            if r_watched.match(task):
+                watched_found = True
+
+            if r_target.match(task):
+                target_found = True
+
+        return False
 
     def is_running_unix(self):
 
@@ -60,6 +76,7 @@ class Checker:
     def run(self):
         self.watch()
         self.terminate_target()
+    
 
 
 if __name__ == "__main__":
