@@ -14,7 +14,7 @@ LOG = logging.getLogger("sublack")
 
 
 class BlackdServer:
-    def __init__(self, host="localhost", port=None, deamon=False):
+    def __init__(self, host="localhost", port=None, deamon=False, timeout=5):
         if not port:
             self.port = str(self.get_open_port())
         else:
@@ -24,11 +24,12 @@ class BlackdServer:
         self.platform = sublime.platform()
         self.deamon = deamon
         self.pid_path = cache_path() / "pid"
+        self.timeout = timeout
 
     def is_running(self):
         # check server running
         started = time.time()
-        while time.time() - started < 5:  # timeout 5 s
+        while time.time() - started < self.timeout:  # timeout 5 s
             try:
                 requests.post("http://" + self.host + ":" + self.port)
             except requests.ConnectionError:
@@ -36,13 +37,13 @@ class BlackdServer:
             else:
                 LOG.info(
                     "blackd running at {} on port {} with pid {}".format(
-                        self.host, self.port, self.proc.pid
+                        self.host, self.port, getattr(self.proc,"pid", None)
                     )
                 )
 
                 return True
         LOG.info(
-            "failed to start blackd at {} on port {}}".format(self.host, self.port)
+            "failed to start blackd at {} on port {}".format(self.host, self.port)
         )
         return False
 
@@ -61,7 +62,6 @@ class BlackdServer:
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
                 startupinfo=startup_info(),
-                # creationflags = subprocess.CREATE_NEW_PROCESS_GROUP
             )
             out, err = proc.communicate(timeout=1)
         except subprocess.TimeoutExpired:
@@ -119,7 +119,8 @@ class BlackdServer:
             LOG.info("blackd halted from cache")
         self.write_cache("")
 
-    def get_open_port(self):
+    @staticmethod
+    def get_open_port():
         s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         s.bind(("", 0))
         port = s.getsockname()[1]
