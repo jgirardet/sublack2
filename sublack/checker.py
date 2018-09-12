@@ -6,13 +6,15 @@ import signal
 import re
 import argparse
 
+DEFAULT_INTERVAL = 5
+
 
 class Checker:
-    def __init__(self, watched: str, target: str, interval: str = "5"):
+    def __init__(self, watched: str, target: str, interval: int = DEFAULT_INTERVAL):
 
         self.watched = watched.encode()
         self.target = int(target)
-        self.interval = int(interval)
+        self.interval = interval
 
         self.is_running = self._set_platform()
 
@@ -99,6 +101,7 @@ if __name__ == "__main__":
         "interval",
         nargs="?",
         type=int,
+        default=DEFAULT_INTERVAL,
         help="interval between each check, default is 5",
     )
 

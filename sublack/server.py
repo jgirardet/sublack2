@@ -14,7 +14,15 @@ LOG = logging.getLogger("sublack")
 
 
 class BlackdServer:
-    def __init__(self, host="localhost", port=None, deamon=False, timeout=5):
+    def __init__(
+        self,
+        host="localhost",
+        port=None,
+        deamon=False,
+        timeout=5,
+        watched="plugin_host",
+        checker_interval=None,
+    ):
         if not port:
             self.port = str(self.get_open_port())
         else:
@@ -25,6 +33,8 @@ class BlackdServer:
         self.deamon = deamon
         self.pid_path = cache_path() / "pid"
         self.timeout = timeout
+        self.watched = watched
+        self.checker_interval = checker_interval
 
     def is_running(self):
         # check server running
@@ -37,14 +47,12 @@ class BlackdServer:
             else:
                 LOG.info(
                     "blackd running at {} on port {} with pid {}".format(
-                        self.host, self.port, getattr(self.proc,"pid", None)
+                        self.host, self.port, getattr(self.proc, "pid", None)
                     )
                 )
 
                 return True
-        LOG.info(
-            "failed to start blackd at {} on port {}".format(self.host, self.port)
-        )
+        LOG.info("failed to start blackd at {} on port {}".format(self.host, self.port))
         return False
 
     def write_cache(self, pid):
@@ -82,14 +90,22 @@ class BlackdServer:
             return False
 
         if self.deamon:
-            watched = "plugin_host"
             cwd = os.path.dirname(os.path.abspath(__file__))
-            LOG.debug(
-                "Running checker watched = %s and proc = %s", watched, self.proc.pid
+            checker_cmd = [
+                sys.executable,
+                "checker.py",
+                self.watched,
+                str(self.proc.pid),
+            ]
+            checker_cmd = (
+                checker_cmd
+                if not self.checker_interval
+                else checker_cmd.extend([self.checker_interval])
             )
-            subprocess.Popen(
-                [sys.executable, "checker.py", watched, str(self.proc.pid)], cwd=cwd
-            )
+            LOG.debug("Running checker {}".format(checker_cmd))
+            self.checker = subprocess.Popen(checker_cmd, cwd=cwd)
+            LOG.debug("checker running with pid %s", self.checker.pid)
+
             self.write_cache(self.proc.pid)
 
         return self.is_running()

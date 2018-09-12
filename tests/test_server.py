@@ -1,4 +1,5 @@
 from fixtures import sublack
+import time
 
 from unittest import TestCase
 from unittest.mock import patch
@@ -19,6 +20,7 @@ def setUpModule():
 def tearDownModule():
     global test_proc
     test_proc.terminate()
+    test_proc.wait()
 
 
 class TestBlackdServer(TestCase):
@@ -33,8 +35,25 @@ class TestBlackdServer(TestCase):
             self.assertFalse(b.is_running())
 
     def test_is_running_blackd_running_return_True(self):
-        import time
-        time.sleep(1)
+        time.sleep(0.5)  # wait balckd on
         global test_port
         b = sublack.server.BlackdServer(port=test_port, timeout=0.001)
         self.assertTrue(b.is_running())
+
+    def test_write_path_if_daemon(self):
+        b = sublack.server.BlackdServer(
+            timeout=0.001, deamon=True, checker_interval=0.001
+        )
+        b.run()
+
+        self.assertEqual(
+            b.proc.pid,
+            b.get_cached_pid(),
+            msg="cache should be written with the server pid",
+        )
+
+        self.assertTrue(b"checker.py plugin_host %s" % b.proc.pid)
+        a in s.check_output('ps x'.split())                                                  
+Out[21]: True 
+
+        b.stop()

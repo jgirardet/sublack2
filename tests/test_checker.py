@@ -117,6 +117,7 @@ class TestRunUnix(TestCase):
         for x in (self.w, self.t, self.p):
             try:
                 x.terminate()
+                # x.wait()
             except ProcessLookupError:
                 pass
 
@@ -158,6 +159,7 @@ class TestRunWindows(TestCase):
         for x in (self.w, self.t, self.p):
             try:
                 x.terminate()
+                x.wait()
             except ProcessLookupError:
                 pass
 
