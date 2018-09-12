@@ -4,10 +4,12 @@ from unittest.mock import patch
 from unittest import TestCase, skipIf
 
 from sublack.checker import Checker
+from sublack.utils import popen, kill_with_pid
 import subprocess as s
 import os
 import platform
 import pathlib
+import sys
 
 root_dir = pathlib.Path(__file__).parents[1]
 sublack_dir = root_dir / "sublack"
@@ -147,19 +149,19 @@ class TestRunUnix(TestCase):
 @skipIf(platform.system() != "Windows", "windows tests")
 class TestRunWindows(TestCase):
     def setUp(self):
-        self.w = s.Popen(["timeout", "/t", "3"])
-        self.t = s.Popen(["CHOICE", "/C:AB", "/T:A,10"])
+        self.w = popen(["timeout", "/t", "3"])
+        self.t = popen(["CHOICE", "/C:AB", "/T:A,10"])
 
-        self.p = s.Popen(
-            ["python3", "checker.py", "timeout", str(self.t.pid), "0"],
+        print(sublack_dir)
+        self.p = popen(
+            [sys.executable, "checker.py", "timeout", str(self.t.pid), "0"],
             cwd=str(sublack_dir),
         )
 
     def tearDown(self):
         for x in (self.w, self.t, self.p):
             try:
-                x.terminate()
-                x.wait()
+                kill_with_pid(x.pid)
             except ProcessLookupError:
                 pass
 

@@ -9,7 +9,7 @@ from fixtures import sublack, blacked, unblacked, diff
 # @skip('mkoomk')
 class TestBlackMethod(TestCase):
     def test_init(self):
-        # test valid number of config options
+        # t*est valid number of config options
         with patch.object(sublack.blacker, "get_settings") as m:
             m.return_value = ["hello"] * 7
             a = sublack.blacker.Black(MagicMock())
@@ -123,6 +123,7 @@ class TestBlackMethod(TestCase):
         c, e = gc(s)
         self.assertEqual(c.decode("utf-8"), "héllo")
 
+    # @skip("demonstrating skipping")
     def test_run_black(self):
         rb = sublack.blacker.Black.run_black
         s = MagicMock()

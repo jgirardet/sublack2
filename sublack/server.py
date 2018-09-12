@@ -8,7 +8,7 @@ import os
 import sys
 from pathlib import Path
 import logging
-from .utils import cache_path, startup_info
+from .utils import cache_path, startup_info, kill_with_pid, popen
 
 LOG = logging.getLogger("sublack")
 
@@ -39,11 +39,17 @@ class BlackdServer:
     def is_running(self):
         # check server running
         started = time.time()
+        print(started, self.timeout)
         while time.time() - started < self.timeout:  # timeout 5 s
+            print(time.time(), "debut boucle")
+
             try:
                 requests.post("http://" + self.host + ":" + self.port)
+                print(time.time(), "fin try")
             except requests.ConnectionError:
+                print(time.time(), "debut sleep")
                 time.sleep(0.2)
+                print(time.time(), "fin sleep")
             else:
                 LOG.info(
                     "blackd running at {} on port {} with pid {}".format(
@@ -52,6 +58,7 @@ class BlackdServer:
                 )
 
                 return True
+        print(time.time())
         LOG.info("failed to start blackd at {} on port {}".format(self.host, self.port))
         return False
 
@@ -65,11 +72,10 @@ class BlackdServer:
 
     def _run_blackd(self, cmd):
         try:
-            proc = subprocess.Popen(
+            proc = popen(
                 cmd,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
-                startupinfo=startup_info(),
             )
             out, err = proc.communicate(timeout=1)
         except subprocess.TimeoutExpired:
@@ -97,30 +103,28 @@ class BlackdServer:
                 self.watched,
                 str(self.proc.pid),
             ]
+            print("checker cmd", checker_cmd)
             checker_cmd = (
                 checker_cmd
                 if not self.checker_interval
-                else checker_cmd.extend([self.checker_interval])
+                else checker_cmd + [str(self.checker_interval)]
             )
+            print("checker cmd", checker_cmd)
             LOG.debug("Running checker {}".format(checker_cmd))
-            self.checker = subprocess.Popen(checker_cmd, cwd=cwd)
+            self.checker = popen(checker_cmd, cwd=cwd)
             LOG.debug("checker running with pid %s", self.checker.pid)
 
             self.write_cache(self.proc.pid)
 
         return self.is_running()
 
-    def stop(self, pid=None):
-        if self.platform == "windows":
-            # need to properly kill precess traa
-            subprocess.call(
-                ["taskkill", "/F", "/T", "/PID", str(pid)], startupinfo=startup_info()
-            )
+    def stop(self, pid = None):
+        if self.proc:
+            self.proc.terminate()
+            self.proc.wait(timeout=10)
         else:
-            if self.proc:
-                self.proc.terminate()
-            else:
-                os.kill(pid, signal.SIGTERM)
+            kill_with_pid(pid)
+
         LOG.info("blackd shutdown")
 
     def stop_from_cache(self):

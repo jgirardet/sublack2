@@ -12,6 +12,9 @@ from .consts import (
 import logging
 import pathlib
 import subprocess
+import signal
+import os
+from functools import partial
 
 LOG = logging.getLogger("sublack")
 
@@ -81,3 +84,16 @@ def startup_info():
         return st
     else:
         return None
+
+
+def kill_with_pid(pid: int):
+    if sublime.platform() == "windows":
+        # need to properly kill precess traa
+        subprocess.call(
+            ["taskkill", "/F", "/T", "/PID", str(pid)], startupinfo=startup_info()
+        )
+    else:
+        os.kill(pid, signal.SIGTERM)
+
+
+popen = partial(subprocess.Popen, startupinfo=startup_info())
