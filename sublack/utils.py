@@ -15,6 +15,7 @@ import subprocess
 import signal
 import os
 from functools import partial
+import socket
 
 LOG = logging.getLogger("sublack")
 
@@ -67,6 +68,14 @@ def get_encoding_from_file(view):
         encoding = get_encoding_from_region(view.line(region.end() + 1), view)
         return encoding
     return None
+
+
+def get_open_port():
+    s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    s.bind(("", 0))
+    port = s.getsockname()[1]
+    s.close()
+    return port
 
 
 def cache_path():

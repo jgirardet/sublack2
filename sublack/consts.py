@@ -39,3 +39,8 @@ HEADERS_TABLE = {
     "--pyi": {"X-Python-Variant": {"X-Python-Variant": "pyi"}},
     "--py36": {"X-Python-Variant": {"X-Python-Variant": "3.6"}},
 }
+
+BLACKD_STARTED = "Blackd server started on port {}"
+BLACKD_START_FAILED = "Blackd server failed to start on port {}"
+BLACKD_STOPPED = "Blackd server stopped"
+BLACKD_STOP_FAILED = "Blackd stopping failed. check logs."

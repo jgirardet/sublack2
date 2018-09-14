@@ -8,7 +8,7 @@ import os
 import sys
 from pathlib import Path
 import logging
-from .utils import cache_path, startup_info, kill_with_pid, popen
+from .utils import cache_path, startup_info, kill_with_pid, popen, get_open_port
 
 LOG = logging.getLogger("sublack")
 
@@ -24,7 +24,7 @@ class BlackdServer:
         checker_interval=None,
     ):
         if not port:
-            self.port = str(self.get_open_port())
+            self.port = str(get_open_port())
         else:
             self.port = port
         self.host = host
@@ -39,17 +39,12 @@ class BlackdServer:
     def is_running(self):
         # check server running
         started = time.time()
-        print(started, self.timeout)
         while time.time() - started < self.timeout:  # timeout 5 s
-            print(time.time(), "debut boucle")
 
             try:
                 requests.post("http://" + self.host + ":" + self.port)
-                print(time.time(), "fin try")
             except requests.ConnectionError:
-                print(time.time(), "debut sleep")
-                time.sleep(0.2)
-                print(time.time(), "fin sleep")
+                time.sleep(0.1)
             else:
                 LOG.info(
                     "blackd running at {} on port {} with pid {}".format(
@@ -58,7 +53,6 @@ class BlackdServer:
                 )
 
                 return True
-        print(time.time())
         LOG.info("failed to start blackd at {} on port {}".format(self.host, self.port))
         return False
 
@@ -68,21 +62,26 @@ class BlackdServer:
         LOG.debug('write cache  "%s"', pid)
 
     def get_cached_pid(self):
-        return int(self.pid_path.open().read())
+        try:
+            pid = int(self.pid_path.open().read())
+        except ValueError:
+            LOG.debug("No pid in cache")
+            return
+        except FileNotFoundError:
+            LOG.debug("Cache file not found")
+            return
+        else:
+            return pid
 
     def _run_blackd(self, cmd):
         try:
-            proc = popen(
-                cmd,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-            )
+            proc = popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             out, err = proc.communicate(timeout=1)
         except subprocess.TimeoutExpired:
-            LOG.info("BlackdServer démarré sur le port {}".format(cmd[2]))
+            LOG.info("BlackdServer started {}".format(cmd[2]))
             out, err = True, None
         else:
-            LOG.info("Erreur du démmmarrage {}".format(err.decode()))  # show stderr
+            LOG.info("blackd start error {}".format(err.decode()))  # show stderr
 
         return proc, out, err
 
@@ -103,13 +102,11 @@ class BlackdServer:
                 self.watched,
                 str(self.proc.pid),
             ]
-            print("checker cmd", checker_cmd)
             checker_cmd = (
                 checker_cmd
                 if not self.checker_interval
                 else checker_cmd + [str(self.checker_interval)]
             )
-            print("checker cmd", checker_cmd)
             LOG.debug("Running checker {}".format(checker_cmd))
             self.checker = popen(checker_cmd, cwd=cwd)
             LOG.debug("checker running with pid %s", self.checker.pid)
@@ -118,7 +115,7 @@ class BlackdServer:
 
         return self.is_running()
 
-    def stop(self, pid = None):
+    def stop(self, pid=None):
         if self.proc:
             self.proc.terminate()
             self.proc.wait(timeout=10)
@@ -127,22 +124,10 @@ class BlackdServer:
 
         LOG.info("blackd shutdown")
 
-    def stop_from_cache(self):
-        try:
-            pid = self.get_cached_pid()
-        except ValueError:
-            LOG.debug("No pid in cache")
-        except FileNotFoundError:
-            LOG.debug("Cache file not found")
-        else:
+    def stop_deamon(self):
+        pid = self.get_cached_pid()
+        if pid:
             self.stop(pid)
             LOG.info("blackd halted from cache")
-        self.write_cache("")
-
-    @staticmethod
-    def get_open_port():
-        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        s.bind(("", 0))
-        port = s.getsockname()[1]
-        s.close()
-        return port
+            self.write_cache("")
+        return pid

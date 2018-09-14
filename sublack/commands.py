@@ -1,6 +1,13 @@
 import sublime_plugin
 import sublime
-from .consts import BLACK_ON_SAVE_VIEW_SETTING, STATUS_KEY
+from .consts import (
+    BLACK_ON_SAVE_VIEW_SETTING,
+    STATUS_KEY,
+    BLACKD_STARTED,
+    BLACKD_STOPPED,
+    BLACKD_START_FAILED,
+    BLACKD_STOP_FAILED,
+)
 from .utils import get_settings
 from .blacker import Black
 import logging
@@ -94,7 +101,11 @@ class BlackdStartCommand(sublime_plugin.TextCommand):
     def run(self, edit):
         port = get_settings(self.view)["black_blackd_port"]
         sv = BlackdServer(deamon=True, host="localhost", port=port)
-        sv.run()
+        running = sv.run()
+        if running:
+            self.view.set_status(STATUS_KEY, BLACKD_STARTED.format(port))
+        else:
+            self.view.set_status(STATUS_KEY, BLACKD_START_FAILED.format(port))
 
 
 class BlackdStopCommand(sublime_plugin.ApplicationCommand):
@@ -104,7 +115,12 @@ class BlackdStopCommand(sublime_plugin.ApplicationCommand):
     is_visible = is_enabled
 
     def run(self):
-        BlackdServer().stop_from_cache()
+        if BlackdServer().stop_deamon():
+            sublime.active_window().active_view().set_status(STATUS_KEY, BLACKD_STOPPED)
+        else:
+            sublime.active_window().active_view().set_status(
+                STATUS_KEY, BLACKD_STOP_FAILED
+            )
 
 
 class EventListener(sublime_plugin.EventListener):
