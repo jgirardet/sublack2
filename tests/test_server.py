@@ -4,6 +4,7 @@ import time
 from unittest import TestCase
 from unittest.mock import patch
 import subprocess
+import requests
 
 from sublack.server import BlackdServer
 from sublack.utils import popen, kill_with_pid, get_open_port
@@ -19,6 +20,7 @@ def setUpModule():
     global test_port
     # test_proc = subprocess.Popen(["blackd", "--bind-port", test_port])
     test_proc = popen(["blackd", "--bind-port", test_port])
+    time.sleep(0.5)  # wait balckd on
     print("tup fin", test_proc.poll())
 
 
@@ -49,19 +51,23 @@ class TestBlackdServer(TestCase):
         self.assertNotEqual(c.port, b.port)
 
     def test_is_running_blackd_not_running_return_False(self):
-        with patch("sublack.server.time.sleep"):
+        b = sublack.server.BlackdServer(timeout=0.001)
+        with patch(
+            "sublack.server.requests.post", side_effect=requests.ConnectionError
+        ) as m:
             # b = sublack.server.BlackdServer(timeout=0)
-            b = sublack.server.BlackdServer(timeout=0.001)
             self.assertFalse(b.is_running())
+            m.assert_called_with(
+                "http://localhost:{}".format(b.port)
+            )  # ensure requests is called once
 
     def test_is_running_blackd_running_return_True(self):
-        time.sleep(0.5)  # wait balckd on
         global test_port
-        b = sublack.server.BlackdServer(port=test_port, timeout=0.001)
+        b = sublack.server.BlackdServer(port=test_port, sleep_time=0.1)
         self.assertTrue(b.is_running())
 
     def test_stop(self):
-        self.serv = sublack.server.BlackdServer(timeout=0.001, checker_interval=0)
+        self.serv = sublack.server.BlackdServer(checker_interval=0, sleep_time=0.001)
         self.serv.run()
         self.assertTrue(self.serv.is_running())
         self.serv.stop()
@@ -69,9 +75,9 @@ class TestBlackdServer(TestCase):
 
     def test_daemon(self):
         self.serv = sublack.server.BlackdServer(
-            timeout=0.001, checker_interval=0, deamon=True
+            sleep_time=0, checker_interval=0, deamon=True
         )
-        self.serv.run()
+        self.assertTrue(self.serv.run())
         self.assertTrue(self.serv.is_running(), msg="should wait blackd is running")
         self.assertEqual(
             self.serv.get_cached_pid(),

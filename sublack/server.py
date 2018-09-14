@@ -14,27 +14,21 @@ LOG = logging.getLogger("sublack")
 
 
 class BlackdServer:
-    def __init__(
-        self,
-        host="localhost",
-        port=None,
-        deamon=False,
-        timeout=5,
-        watched="plugin_host",
-        checker_interval=None,
-    ):
+    def __init__(self, host="localhost", port=None, deamon=False, **kwargs):
         if not port:
             self.port = str(get_open_port())
         else:
             self.port = port
         self.host = host
         self.proc = None
-        self.platform = sublime.platform()
         self.deamon = deamon
         self.pid_path = cache_path() / "pid"
-        self.timeout = timeout
-        self.watched = watched
-        self.checker_interval = checker_interval
+        self.timeout = kwargs.get("timeout", 5)
+        self.sleep_time = kwargs.get("sleep_time", 0.1)
+        self.watched = kwargs.get("watched", "plugin_host")
+        self.checker_interval = kwargs.get("checker_interval", None)
+
+        self.platform = sublime.platform()
 
     def is_running(self):
         # check server running
@@ -44,7 +38,7 @@ class BlackdServer:
             try:
                 requests.post("http://" + self.host + ":" + self.port)
             except requests.ConnectionError:
-                time.sleep(0.1)
+                time.sleep(self.sleep_time)
             else:
                 LOG.info(
                     "blackd running at {} on port {} with pid {}".format(
