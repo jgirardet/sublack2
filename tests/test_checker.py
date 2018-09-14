@@ -145,6 +145,10 @@ class TestRunUnix(TestCase):
         self.assertIsNotNone(self.p.wait(timeout=2))
         self.assertIsNone(self.w.poll())
 
+    def test_osx(self):
+        a = s.check_output(["ps", "x"])
+        self.assertEqual(a, b"mkmokmokmok")
+
 
 @skipIf(platform.system() != "Windows", "windows tests")
 class TestRunWindows(TestCase):

@@ -84,17 +84,6 @@ from sublack.consts import (
 #         v.close()
 
 
-# def setUpModule():
-#     global blackd_proc
-#     if not blackd_proc.run():
-#         raise IOError("blackd server not running")
-
-
-# def tearDownModule():
-#     global blackd_proc
-#     blackd_proc.stop()
-
-
 # @patch.object(sublack.commands, "is_python", return_value=True)
 # @patch.object(sublack.blacker, "get_settings", return_value=BLACKDSERVER_SETTINGS)
 class TestBlackdServer(TestCase):
