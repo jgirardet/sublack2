@@ -70,7 +70,7 @@ class TestIsRunningUnix(TestCase):
             p.wait(timeout=2)
 
 
-@skipIf(platform.system() != "windows", "windows tests")
+@skipIf(platform.system() != "Windows", "windows tests")
 class TestIsRunningWindows(TestCase):
     def test_target_alredy_terminated_return_talse(self):
         p = s.Popen(["dir"])

@@ -36,9 +36,9 @@
       // run black before saving document
       "black_on_save": false,
 
-      //debug mode
-      // show black log in console, errors are always shown
-      "black_debug_on": false,
+      // set debug mode. default is error
+      // choices : debug, info, error
+      "black_log": "error",
 
       // default encoding for never saved file, if not specified un  first 2 lines (pep 263):
       // default is "utf-8". Change this only if you want override default behaviour.

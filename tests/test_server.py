@@ -17,7 +17,9 @@ test_port = str(get_open_port())
 def setUpModule():
     print("tup")
     global test_proc
+
     global test_port
+
     # test_proc = subprocess.Popen(["blackd", "--bind-port", test_port])
     test_proc = popen(["blackd", "--bind-port", test_port])
     time.sleep(0.5)  # wait balckd on

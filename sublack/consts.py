@@ -21,7 +21,7 @@ CONFIG_OPTIONS = [
     "black_skip_string_normalization",
     "black_command",
     "black_on_save",
-    "black_debug_on",
+    "black_log",
     "black_default_encoding",
     "black_include",
     "black_exclude",

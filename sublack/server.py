@@ -72,6 +72,8 @@ class BlackdServer:
             proc = popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             out, err = proc.communicate(timeout=1)
         except subprocess.TimeoutExpired:
+            print(LOG.handlers)
+
             LOG.info("BlackdServer started {}".format(cmd[2]))
             out, err = True, None
         else:

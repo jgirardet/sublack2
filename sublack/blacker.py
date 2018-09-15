@@ -13,16 +13,17 @@ import requests
 
 import logging
 
-from .consts import HEADERS_TABLE, ALREADY_FORMATED_MESSAGE, STATUS_KEY
+from .consts import HEADERS_TABLE, ALREADY_FORMATED_MESSAGE, STATUS_KEY, PACKAGE_NAME
 from .utils import get_settings, get_encoding_from_file
 
-LOG = logging.getLogger("sublack")
+LOG = logging.getLogger(PACKAGE_NAME)
 
 
 class Blackd:
     """warpper between black command line and blackd."""
 
     def __init__(self, cmd, content, encoding, config):
+
         self.headers = self.format_headers(cmd)
         self.content = content
         self.encoding = encoding
@@ -40,6 +41,7 @@ class Blackd:
         if "-l" in cmd:
             headers["X-Line-Length"] = cmd[cmd.index("-l") + 1]
 
+        LOG.debug("headers : %s", headers)
         return headers
 
     def process_response(self, response):
@@ -74,7 +76,8 @@ class Blackd:
             response = requests.Response()
             response.status_code = 500
             response._content = str(err).encode()
-            LOG.exception("Request to  Blackd failed")
+            LOG.error("Request to  Blackd failed")
+            LOG.debug("%s", err)
 
         return self.process_response(response)
 
@@ -95,7 +98,7 @@ class Black:
         cmd = self.config["black_command"]
         if not cmd:
             # always show error in popup
-            msg = "Black command not configured. Problem with settings?"
+            msg = "Black command not configured. Problem with settings ?"
             sublime.error_message(msg)
             raise Exception(msg)
 
@@ -140,6 +143,7 @@ class Black:
         if self.config.get("black_py36"):
             cmd.append("--py36")
 
+        LOG.debug("command line: %s", cmd)
         return cmd
 
     def windows_popen_prepare(self):
@@ -175,6 +179,7 @@ class Black:
         content = self.view.substr(self.all)
         content = content.encode(encoding)
 
+        LOG.debug("encoding: %s", encoding)
         return content, encoding
 
     def run_black(self, cmd, env, cwd, content):
@@ -204,6 +209,7 @@ class Black:
                 "You may need to install Black and/or configure 'black_command' in Sublack's Settings."
             )
 
+        LOG.debug("run_black: returncode %s, err: %s", p.returncode, err)
         return p.returncode, out, err
 
     def do_diff(self, edit, out, encoding):
@@ -234,24 +240,26 @@ class Black:
         cmd = self.get_command_line(edit, extra)
         env = self.get_env()
         cwd = self.get_good_working_dir()
+        LOG.debug("working dir: %s", cwd)
+
         content, encoding = self.get_content()
 
         if (
             self.config["black_use_blackd"] and "--diff" not in extra
         ):  # no diff with server
-            LOG.debug("using blackd")
+            LOG.info("using blackd")
             returncode, out, err = Blackd(cmd, content, encoding, self.config)()
         else:
-            LOG.debug("using black")
+            LOG.info("using black")
             returncode, out, err = self.run_black(cmd, env, cwd, content)
 
         error_message = err.decode(encoding).replace("\r\n", "\n").replace("\r", "\n")
 
-        LOG.debug("[SUBLACK] : %s" % error_message)
+        LOG.info("black says : %s" % error_message)
 
         # failure
         if returncode != 0:
-            self.view.window().status_message(error_message)
+            self.view.set_status(STATUS_KEY, error_message)
             return returncode
 
         # already formated, nothing changes

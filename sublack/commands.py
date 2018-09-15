@@ -13,7 +13,7 @@ from .blacker import Black
 import logging
 from .server import BlackdServer
 
-LOG = logging.getLogger("sublack")
+LOG = logging.getLogger(__name__)
 
 
 def is_python(view):

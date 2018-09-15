@@ -5,8 +5,19 @@ import os
 import signal
 import re
 import argparse
+import logging
+
 
 DEFAULT_INTERVAL = 5
+
+
+LOG = logging.getLogger("blackdserver_checker")
+formatter = logging.Formatter(
+    "[blackdserver_checker:%(funcName)s:%(lineno)d](%(levelname)s) %(message)s"
+)
+dh = logging.StreamHandler()
+dh.setFormatter(formatter)
+LOG.addHandler(dh)
 
 
 class Checker:
@@ -17,6 +28,8 @@ class Checker:
         self.interval = interval
 
         self.is_running = self._set_platform()
+
+        LOG.debug("platform %s", self.is_running.__name__)
 
     def is_running_windows(self):
         tasklist = subprocess.check_output(["tasklist", "/FO", "CSV"]).splitlines()
@@ -31,12 +44,20 @@ class Checker:
 
             if r_watched.match(task):
                 watched_found = True
+                LOG.debug("watched found at line %s", task)
 
             if r_target.match(task):
                 target_found = True
+                LOG.debug("target found at line %s", task)
 
             if watched_found and target_found:
+                LOG.info(
+                    'watched "%s" and target "%d" found', self.watched, self.target
+                )
                 return True
+
+        LOG.info("target or watched not running anymore")
+
         return False
 
     def is_running_unix(self):
@@ -56,12 +77,21 @@ class Checker:
                 and splitted[2] != b"Z"
             ):
                 watched_found = True
+                LOG.debug("watched found at line %s", task)
 
             if str(self.target).encode() == splitted[0] and splitted[2] != b"Z":
                 target_found = True
+                LOG.debug("target found at line %s", task)
 
             if watched_found and target_found:
+                LOG.info(
+                    'watched "%s" and target "%d" found',
+                    self.watched.decode(),
+                    self.target,
+                )
                 return True
+
+        LOG.info("target or watched not running anymore")
         return False
 
     def _set_platform(self):
@@ -84,9 +114,10 @@ class Checker:
 
     def terminate_target(self):
         try:
+            LOG.info("killing target %d", self.target)
             os.kill(self.target, signal.SIGTERM)
         except ProcessLookupError:
-            print("Process {} already terminated".format(self.target))
+            LOG.info("Process %d already terminated", self.target)
 
     def run(self):
         self.watch()
@@ -105,8 +136,21 @@ if __name__ == "__main__":
         default=DEFAULT_INTERVAL,
         help="interval between each check, default is 5",
     )
+    parser.add_argument(
+        "-v", "--verbose", help="increase output verbosity", action="count", default=0
+    )
 
     args = parser.parse_args()
 
-    print("running checker", vars(args))
+    if args.verbose == 1:
+        LOG.setLevel(logging.INFO)
+    elif args.verbose > 1:
+        LOG.setLevel(logging.DEBUG)
+    else:
+        LOG.setLevel(logging.WARNING)
+
+    LOG.info("Running checker with args %s", vars(args))
+    params = vars(args)
+    params.pop("verbose")
     Checker(**vars(args)).run()
+    LOG.info("stopping checker")

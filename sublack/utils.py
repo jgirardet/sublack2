@@ -17,7 +17,7 @@ import os
 from functools import partial
 import socket
 
-LOG = logging.getLogger("sublack")
+LOG = logging.getLogger(__name__)
 
 
 def get_settings(view):

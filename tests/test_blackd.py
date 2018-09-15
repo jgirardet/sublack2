@@ -1,3 +1,7 @@
+"""
+TODO : test headers
+"""
+
 from unittest import TestCase
 from unittest.mock import patch
 
@@ -25,7 +29,7 @@ BASE_SETTINGS = {
     "black_fast": False,
     "black_debug_on": True,
     "black_default_encoding": "utf-8",
-    "black_skip_string_normalization": False,
+    "black_skip_string_normalization": True,
     "black_include": None,
     "black_py36": None,
     "black_exclude": None,
