@@ -149,7 +149,7 @@ class TestRunUnix(TestCase):
         self.assertIsNone(self.w.poll())
 
     def test_osx(self):
-        tasklist = s.check_output(["ps", "-x"]).strip().split(b"\n")
+        tasklist = s.check_output(["ps", "-x"])
 
         max4 = []
         normal = []
@@ -161,6 +161,10 @@ class TestRunUnix(TestCase):
             normal.append((splitted, len(splitted)))
 
         self.assertEqual(max4, normal)
+
+    def test_osx2(self):
+        tasklist = s.check_output(["ps", "-x"])
+        self.assertEqual(tasklist, tasklist.splitlines())
 
 
 @skipIf(platform.system() != "Windows", "windows tests")
