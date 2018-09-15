@@ -19,7 +19,8 @@ class Checker:
         self.is_running = self._set_platform()
 
     def is_running_windows(self):
-        tasklist = subprocess.check_output(["tasklist", "/FO", "CSV"]).split(b"\r\n")
+        tasklist = subprocess.check_output(["tasklist", "/FO", "CSV"]).splitlines()
+
         r_watched = re.compile(rb'"%b\.exe"' % self.watched)
         r_target = re.compile(rb'".+","%b"' % str(self.target).encode())
 
@@ -40,23 +41,23 @@ class Checker:
 
     def is_running_unix(self):
 
-        tasklist = subprocess.check_output(["ps", "x"]).strip().split(b"\n")
+        tasklist = subprocess.check_output(["ps", "xo", "pid,stat,cmd"]).splitlines()
 
         watched_found = False
         target_found = False
 
         for task in tasklist:
 
-            splitted = task.split(maxsplit=4)
+            splitted = task.split(maxsplit=2)
 
             if (
-                self.watched in splitted[4]
-                and b"checker.py" not in splitted[4]
-                and splitted[2] != b"Z"
+                self.watched in splitted[2]
+                and b"checker.py" not in splitted[2]
+                and splitted[1] != b"Z"
             ):
                 watched_found = True
 
-            if str(self.target).encode() == splitted[0] and splitted[2] != b"Z":
+            if str(self.target).encode() == splitted[0] and splitted[1] != b"Z":
                 target_found = True
 
             if watched_found and target_found:

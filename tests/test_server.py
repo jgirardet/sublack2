@@ -36,6 +36,11 @@ class TestBlackdServer(TestCase):
     at tearDown
     """
 
+    def setUp(self):
+        import platform
+
+        self.return_code = 1 if platform.system() == "Windows" else 0
+
     def tearDown(self):
         # if hasattr(self, "serv"):  # a blackdserver
         try:
@@ -71,7 +76,7 @@ class TestBlackdServer(TestCase):
         self.serv.run()
         self.assertTrue(self.serv.is_running())
         self.serv.stop()
-        self.assertEqual(self.serv.proc.wait(timeout=2), 0)
+        self.assertEqual(self.serv.proc.wait(timeout=2), self.return_code)
 
     def test_daemon(self):
         self.serv = sublack.server.BlackdServer(
@@ -88,7 +93,7 @@ class TestBlackdServer(TestCase):
         BlackdServer().stop_deamon()
         self.assertEqual(
             self.serv.proc.wait(timeout=2),
-            0,
+            self.return_code,
             "blackd should be stopped with return code 0",
         )
         self.assertFalse(
