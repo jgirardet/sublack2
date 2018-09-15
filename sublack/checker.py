@@ -41,23 +41,23 @@ class Checker:
 
     def is_running_unix(self):
 
-        tasklist = subprocess.check_output(["ps", "-xo", "pid,stat,cmd"]).splitlines()
+        tasklist = subprocess.check_output(["ps", "x"]).splitlines()
 
         watched_found = False
         target_found = False
 
         for task in tasklist:
 
-            splitted = task.split(maxsplit=2)
+            splitted = task.split(maxsplit=4)
 
             if (
-                self.watched in splitted[2]
-                and b"checker.py" not in splitted[2]
-                and splitted[1] != b"Z"
+                self.watched in splitted[4]
+                and b"checker.py" not in splitted[4]
+                and splitted[2] != b"Z"
             ):
                 watched_found = True
 
-            if str(self.target).encode() == splitted[0] and splitted[1] != b"Z":
+            if str(self.target).encode() == splitted[0] and splitted[2] != b"Z":
                 target_found = True
 
             if watched_found and target_found:
