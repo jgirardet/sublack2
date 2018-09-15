@@ -146,8 +146,17 @@ class TestRunUnix(TestCase):
         self.assertIsNone(self.w.poll())
 
     def test_osx(self):
-        a = s.check_output(["ps", "x"])
-        self.assertEqual(a, b"mkmokmokmok")
+        tasklist = s.check_output(["ps", "-x"]).strip().split(b"\n")
+
+        max4 = []
+        normal = []
+        for task in tasklist:
+
+            splitted = task.split(maxsplit=4)
+            max4.append((splitted, len(splitted)))
+            splitted = task.split()
+            normal.append((splitted, len(splitted)))
+        self.assertEqual(max4)
 
 
 @skipIf(platform.system() != "Windows", "windows tests")
