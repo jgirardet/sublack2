@@ -7,9 +7,6 @@ import pathlib
 from .sublack import *  # noqa
 
 LOG = logging.getLogger("sublack")
-handler = logging.StreamHandler()
-LOG.addHandler(handler)
-LOG.setLevel(logging.INFO)
 
 
 from . import sublack
@@ -20,10 +17,15 @@ sys.modules["sublack"] = sublack
 def plugin_loaded():
 
     # set logLevel
+    if not LOG.hasHandlers():
+        ch = logging.StreamHandler(sys.stdout)
+        LOG.addHandler(ch)
+        LOG.setLevel(logging.INFO)
+
     current_view = sublime.active_window().active_view()
     config = sublack.utils.get_settings(current_view)
-    if config["black_debug_on"]:
-        LOG.setLevel(logging.DEBUG)
+    # if config["black_debug_on"]:
+    #     LOG.setLevel(logging.DEBUG)
 
     # # check cache_path
     from sublack.utils import cache_path
