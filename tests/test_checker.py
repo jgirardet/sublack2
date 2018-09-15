@@ -166,7 +166,7 @@ class TestRunUnix(TestCase):
         tasklist = s.check_output(["ps", "-x"])
         self.assertEqual(tasklist, tasklist.splitlines())
 
-    def test_osx2(self):
+    def test_osx3(self):
         tasklist = s.check_output(["ps", "x"])
         self.assertEqual(tasklist, tasklist.splitlines())
 
