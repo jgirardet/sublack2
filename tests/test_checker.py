@@ -166,6 +166,10 @@ class TestRunUnix(TestCase):
         tasklist = s.check_output(["ps", "-x"])
         self.assertEqual(tasklist, tasklist.splitlines())
 
+    def test_osx2(self):
+        tasklist = s.check_output(["ps", "x"])
+        self.assertEqual(tasklist, tasklist.splitlines())
+
 
 @skipIf(platform.system() != "Windows", "windows tests")
 class TestRunWindows(TestCase):
