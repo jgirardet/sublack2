@@ -106,6 +106,9 @@ class TestIsRunningWindows(TestCase):
 
 @skipIf(platform.system() == "Windows", "unix tests")
 class TestRunUnix(TestCase):
+
+    maxDiff = None
+
     def setUp(self):
         self.w = s.Popen(["sleep", "3"])
         self.t = s.Popen(["tail", "-f"])
@@ -156,6 +159,7 @@ class TestRunUnix(TestCase):
             max4.append((splitted, len(splitted)))
             splitted = task.split()
             normal.append((splitted, len(splitted)))
+
         self.assertEqual(max4)
 
 
