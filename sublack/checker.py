@@ -40,7 +40,7 @@ class Checker:
 
     def is_running_unix(self):
 
-        tasklist = subprocess.check_output(["ps", "-x"]).strip().split(b"\n")
+        tasklist = subprocess.check_output(["ps", "x"]).strip().split(b"\n")
 
         watched_found = False
         target_found = False
