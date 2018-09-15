@@ -160,7 +160,7 @@ class TestRunUnix(TestCase):
             splitted = task.split()
             normal.append((splitted, len(splitted)))
 
-        self.assertEqual(max4)
+        self.assertEqual(max4, normal)
 
 
 @skipIf(platform.system() != "Windows", "windows tests")
