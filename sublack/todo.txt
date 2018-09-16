@@ -1,1 +1,2 @@
 check pid before running new one
+2 servers : errros and say runnning

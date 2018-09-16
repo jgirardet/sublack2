@@ -73,13 +73,13 @@ class TestIsRunningUnix(TestCase):
 @skipIf(platform.system() != "Windows", "windows tests")
 class TestIsRunningWindows(TestCase):
     def test_target_alredy_terminated_return_talse(self):
-        p = s.Popen(["dir"])
+        p = popen(["timeout"])
         p.wait(timeout=2)
         c = Checker("a", p.pid)
         self.assertFalse(c.is_running())
 
     def test_watched_still_running_return_true(self):
-        p = s.Popen(["timeout", "/t", "3"])
+        p = popen(["timeout", "/t", "3"])
         c = Checker("timeout", os.getpid())
         try:
             self.assertFalse(c.is_running())
@@ -90,8 +90,8 @@ class TestIsRunningWindows(TestCase):
             p.wait(timeout=2)
 
     def test_watched_not_running_return_false(self):
-        p = s.Popen(["timeout", "/t", "3"])
-        c = Checker("timeout", os.pid())
+        p = popen(["timeout", "/t", "3"])
+        c = Checker("timeout", os.getpid())
         p.terminate()
         p.wait(timeout=2)
         self.assertFalse(c.is_running())
