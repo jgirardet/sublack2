@@ -7,13 +7,14 @@ from .consts import (
     BLACKD_STOPPED,
     BLACKD_START_FAILED,
     BLACKD_STOP_FAILED,
+    PACKAGE_NAME,
 )
 from .utils import get_settings
 from .blacker import Black
 import logging
 from .server import BlackdServer
 
-LOG = logging.getLogger(__name__)
+LOG = logging.getLogger(PACKAGE_NAME)
 
 
 def is_python(view):
@@ -31,7 +32,7 @@ class BlackFileCommand(sublime_plugin.TextCommand):
     is_visible = is_enabled
 
     def run(self, edit):
-        LOG.debug("[SUBLACK] : run black_file")
+        LOG.debug("running black_file")
         Black(self.view)(edit)
 
 
@@ -46,7 +47,7 @@ class BlackDiffCommand(sublime_plugin.TextCommand):
     is_visible = is_enabled
 
     def run(self, edit):
-        LOG.debug("[SUBLACK] : run black_diff")
+        LOG.debug("running black_file")
         Black(self.view)(edit, extra=["--diff"])
 
 
@@ -99,6 +100,7 @@ class BlackdStartCommand(sublime_plugin.TextCommand):
     is_visible = is_enabled
 
     def run(self, edit):
+        LOG.debug("blackd_start command running")
         port = get_settings(self.view)["black_blackd_port"]
         sv = BlackdServer(deamon=True, host="localhost", port=port)
         running = sv.run()
@@ -115,6 +117,7 @@ class BlackdStopCommand(sublime_plugin.ApplicationCommand):
     is_visible = is_enabled
 
     def run(self):
+        LOG.debug("blackd_stop command running")
         if BlackdServer().stop_deamon():
             sublime.active_window().active_view().set_status(STATUS_KEY, BLACKD_STOPPED)
         else:

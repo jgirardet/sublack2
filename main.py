@@ -37,11 +37,11 @@ def plugin_loaded():
         LOG.addHandler(dh)
 
     try:
-        LOG.setLevel(config["black_log"].upper())
+        LOG.setLevel(config.get("black_log", "").upper())
     except ValueError as err:
         LOG.error(err)
         LOG.setLevel("ERROR")
-        LOG.error("fallback to loglevel %s", config["black_log"].upper())
+        LOG.error("fallback to loglevel ERROR")
 
     LOG.info("Loglevel set to %s", config["black_log"].upper())
 

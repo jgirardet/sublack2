@@ -93,6 +93,8 @@ class Black:
         self.all = sublime.Region(0, self.view.size())
         self.variables = view.window().extract_variables()
 
+        LOG.debug("config: %s", self.config)
+
     def get_command_line(self, edit, extra=[]):
         # prepare popen arguments
         cmd = self.config["black_command"]
@@ -247,15 +249,15 @@ class Black:
         if (
             self.config["black_use_blackd"] and "--diff" not in extra
         ):  # no diff with server
-            LOG.info("using blackd")
+            LOG.debug("using blackd")
             returncode, out, err = Blackd(cmd, content, encoding, self.config)()
         else:
-            LOG.info("using black")
+            LOG.debug("using black")
             returncode, out, err = self.run_black(cmd, env, cwd, content)
 
         error_message = err.decode(encoding).replace("\r\n", "\n").replace("\r", "\n")
 
-        LOG.info("black says : %s" % error_message)
+        LOG.debug("black says : %s" % error_message)
 
         # failure
         if returncode != 0:

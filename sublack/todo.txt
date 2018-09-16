@@ -1,0 +1,1 @@
+check pid before running new one

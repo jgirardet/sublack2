@@ -9,15 +9,12 @@ from .consts import (
     SETTINGS_NS_PREFIX,
 )
 
-import logging
 import pathlib
 import subprocess
 import signal
 import os
 from functools import partial
 import socket
-
-LOG = logging.getLogger(__name__)
 
 
 def get_settings(view):

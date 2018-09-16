@@ -1,16 +1,14 @@
-import signal
 import subprocess
 import sublime
-import socket
 import requests
 import time
 import os
 import sys
-from pathlib import Path
 import logging
-from .utils import cache_path, startup_info, kill_with_pid, popen, get_open_port
+from .utils import cache_path, kill_with_pid, popen, get_open_port
+from .consts import PACKAGE_NAME
 
-LOG = logging.getLogger("sublack")
+LOG = logging.getLogger(PACKAGE_NAME)
 
 
 class BlackdServer:
@@ -29,6 +27,7 @@ class BlackdServer:
         self.checker_interval = kwargs.get("checker_interval", None)
 
         self.platform = sublime.platform()
+        LOG.debug("New blackdServer instance with params : %s", vars(self))
 
     def is_running(self):
         # check server running
@@ -41,40 +40,43 @@ class BlackdServer:
                 time.sleep(self.sleep_time)
             else:
                 LOG.info(
-                    "blackd running at {} on port {} with pid {}".format(
-                        self.host, self.port, getattr(self.proc, "pid", None)
-                    )
+                    "blackd running at %s on port %s with pid %s",
+                    self.host,
+                    self.port,
+                    getattr(self.proc, "pid", None),
                 )
 
                 return True
-        LOG.info("failed to start blackd at {} on port {}".format(self.host, self.port))
+        LOG.error("blackd not running at %s on port %s", self.host, self.port)
         return False
 
     def write_cache(self, pid):
         with self.pid_path.open("w") as f:
             f.write(str(pid))
-        LOG.debug('write cache  "%s"', pid)
+        LOG.debug('pid cache updated to "%s"', pid)
 
     def get_cached_pid(self):
         try:
             pid = int(self.pid_path.open().read())
         except ValueError:
-            LOG.debug("No pid in cache")
+            LOG.debug("get_cached_pid: No pid in cache")
             return
         except FileNotFoundError:
-            LOG.debug("Cache file not found")
+            LOG.debug("get_cached_pid: Cache file not found")
             return
         else:
+            LOG.debug("get_cached_pid: %s", pid)
             return pid
 
     def _run_blackd(self, cmd):
         try:
+            LOG.debug("Starting blackd with args %s", cmd)
             proc = popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             out, err = proc.communicate(timeout=1)
         except subprocess.TimeoutExpired:
-            print(LOG.handlers)
-
-            LOG.info("BlackdServer started {}".format(cmd[2]))
+            LOG.debug(
+                "BlackdServer started on port %s with pid %s", self.port, proc.pid
+            )
             out, err = True, None
         else:
             LOG.info("blackd start error {}".format(err.decode()))  # show stderr
@@ -103,9 +105,9 @@ class BlackdServer:
                 if not self.checker_interval
                 else checker_cmd + [str(self.checker_interval)]
             )
-            LOG.debug("Running checker {}".format(checker_cmd))
+            LOG.debug("Running checker with args %s", checker_cmd)
             self.checker = popen(checker_cmd, cwd=cwd)
-            LOG.debug("checker running with pid %s", self.checker.pid)
+            LOG.info("Blackd Checker running with pid %s", self.checker.pid)
 
             self.write_cache(self.proc.pid)
 
@@ -118,12 +120,14 @@ class BlackdServer:
         else:
             kill_with_pid(pid)
 
-        LOG.info("blackd shutdown")
+        LOG.info("blackd stopped")
 
     def stop_deamon(self):
+        LOG.debug("blackdServer stopping deamon")
         pid = self.get_cached_pid()
         if pid:
             self.stop(pid)
-            LOG.info("blackd halted from cache")
             self.write_cache("")
-        return pid
+            return pid
+        else:
+            LOG.error("No blackd deamon could be stop since no pid cached")
