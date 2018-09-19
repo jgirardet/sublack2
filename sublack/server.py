@@ -78,7 +78,7 @@ class BlackdServer:
         # free = not self.is_running(sleep_time=0)
 
         try:
-            rc = requests.post("http://" + self.host + ":" + self.port)
+            requests.post("http://" + self.host + ":" + self.port)
         except requests.ConnectionError:
             LOG.debug("port checked, seems free")
         else:
@@ -102,7 +102,7 @@ class BlackdServer:
             error = proc.stderr.read()
 
             # LOG.error(b"blackd start error %s", error)  # show stderr
-            LOG.error(b"blackd start error %s", running)  # show stderr
+            LOG.error(b"blackd start error %s", error)  # show stderr
 
         LOG.debug("_run_blackd: %s, %s", proc, running)
 

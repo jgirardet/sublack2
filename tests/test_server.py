@@ -47,13 +47,13 @@ class TestBlackdServer(TestCase):
         self.return_code = 1 if platform.system() == "Windows" else 0
 
     def tearDown(self):
-        # if hasattr(self, "serv"):  # a blackdserver
-        try:
-            self.serv.stop()
-        except AttributeError:
-            pass
-        except ProcessLookupError:
-            pass
+        if hasattr(self, "serv") and self.serv.proc:  # a blackdserver
+            try:
+                self.serv.stop()
+            except AttributeError:
+                pass
+            except ProcessLookupError:
+                pass
 
     # def test_no_port_give_random_port(self):
     #     b = BlackdServer()
