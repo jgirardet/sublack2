@@ -102,6 +102,20 @@ class TestBlackdServer(TestCase):
             BlackdServer().get_cached_pid(), "should get a blank cached pid"
         )
 
+    def test_run_blackd_start_fail(self):
+        global test_port
+        self.serv = sublack.server.BlackdServer(
+            sleep_time=0, checker_interval=0, port=test_port
+        )
+        self.serv.proc, rc = self.serv._run_blackd(["blackd", "--bind-port", test_port])
+        self.assertTrue(rc)
+
+    def test_run_blackd_start_ok(self):
+        self.serv = sublack.server.BlackdServer(sleep_time=0, checker_interval=0)
+        proc, rc = self.serv._run_blackd(["blackd", "--bind-port", self.serv.port])
+        self.serv.proc = proc
+        self.assertIsNone(rc)
+
 
 #         # checker_ps = ("checker.py plugin_host %s" % b.proc.pid).encode()
 

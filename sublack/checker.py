@@ -7,7 +7,6 @@ import re
 import argparse
 import logging
 
-from .utils import popen
 
 DEFAULT_INTERVAL = 5
 
@@ -32,14 +31,31 @@ class Checker:
 
         LOG.debug("platform %s", self.is_running.__name__)
 
+    def windows_prepare(self):
+        st = subprocess.STARTUPINFO()
+        st.dwFlags = (
+            subprocess.STARTF_USESHOWWINDOW | subprocess.CREATE_NEW_PROCESS_GROUP
+        )
+        st.wShowWindow = subprocess.SW_HIDE
+        return st
+
     def is_running_windows(self):
         # tasklist = subprocess.check_output(["tasklist", "/FO", "CSV"]).splitlines()
-        tasklist = popen(["tasklist", "/FO", "CSV"], stdout=subprocess.PIPE).stdout.read().splitlines()
+
+        tasklist = (
+            subprocess.Popen(
+                ["tasklist", "/FO", "CSV"],
+                stdout=subprocess.PIPE,
+                startupinfo=self.windows_prepare(),
+            )
+            .stdout.read()
+            .splitlines()
+        )
 
         # r_watched = re.compile(rb'"%b\.exe"' % self.watched)
-        r_watched = re.compile(rb'"'+ self.watched + rb'\.exe"')
+        r_watched = re.compile(rb'"' + self.watched + rb'\.exe"')
         # r_target = re.compile(rb'".+","%b"' % str(self.target).encode())
-        r_target = re.compile(rb'".+","' + str(self.target).encode() +rb'"' )
+        r_target = re.compile(rb'".+","' + str(self.target).encode() + rb'"')
 
         watched_found = False
         target_found = False

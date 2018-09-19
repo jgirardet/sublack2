@@ -69,27 +69,33 @@ class BlackdServer:
             return pid
 
     def _run_blackd(self, cmd):
+        rc = None
+        proc = None
         try:
             LOG.debug("Starting blackd with args %s", cmd)
             proc = popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-            out, err = proc.communicate(timeout=1)
+            # import subprocess
+            # proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+            rc = proc.wait(timeout=1)
         except subprocess.TimeoutExpired:
             LOG.debug(
                 "BlackdServer started on port %s with pid %s", self.port, proc.pid
             )
-            out, err = True, None
         else:
-            LOG.info("blackd start error {}".format(err.decode()))  # show stderr
+            error = proc.stderr.read()
 
-        return proc, out, err
+            LOG.error(b"blackd start error %s", error)  # show stderr
+
+        return proc, rc
 
     def run(self):
 
         cmd = ["blackd", "--bind-port", self.port]
 
-        self.proc, out, err = self._run_blackd(cmd)
+        self.proc, rc = self._run_blackd(cmd)
 
-        if err:
+        if rc:
             return False
 
         if self.deamon:
