@@ -29,15 +29,17 @@ class BlackdServer:
         self.platform = sublime.platform()
         LOG.debug("New blackdServer instance with params : %s", vars(self))
 
-    def is_running(self):
+    def is_running(self, timeout=None, sleep_time=None):
         # check server running
+        timeout = timeout if timeout else self.timeout
+        sleep_time = sleep_time if sleep_time else self.sleep_time
         started = time.time()
-        while time.time() - started < self.timeout:  # timeout 5 s
+        while time.time() - started < timeout:  # timeout 5 s
 
             try:
                 requests.post("http://" + self.host + ":" + self.port)
             except requests.ConnectionError:
-                time.sleep(self.sleep_time)
+                time.sleep(sleep_time)
             else:
                 LOG.info(
                     "blackd running at %s on port %s with pid %s",
@@ -69,33 +71,50 @@ class BlackdServer:
             return pid
 
     def _run_blackd(self, cmd):
-        rc = None
         proc = None
-        try:
-            LOG.debug("Starting blackd with args %s", cmd)
-            proc = popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-            # import subprocess
-            # proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        running = None
 
-            rc = proc.wait(timeout=1)
-        except subprocess.TimeoutExpired:
+        LOG.debug("Starting blackd with args %s", cmd)
+        # free = not self.is_running(sleep_time=0)
+
+        try:
+            rc = requests.post("http://" + self.host + ":" + self.port)
+        except requests.ConnectionError:
+            LOG.debug("port checked, seems free")
+        else:
+            LOG.debug("port seems busy")
+            return proc, False
+
+        proc = popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        # import subprocess
+
+        # proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        # rc = proc.communicate(timeout=2)
+        # running = self.is_running(timeout=5)
+
+        if self.is_running(timeout=5):
+            running = True
             LOG.debug(
                 "BlackdServer started on port %s with pid %s", self.port, proc.pid
             )
         else:
+            proc.communicate(timeout=1)
             error = proc.stderr.read()
 
-            LOG.error(b"blackd start error %s", error)  # show stderr
+            # LOG.error(b"blackd start error %s", error)  # show stderr
+            LOG.error(b"blackd start error %s", running)  # show stderr
 
-        return proc, rc
+        LOG.debug("_run_blackd: %s, %s", proc, running)
+
+        return proc, running
 
     def run(self):
 
         cmd = ["blackd", "--bind-port", self.port]
 
-        self.proc, rc = self._run_blackd(cmd)
+        self.proc, running = self._run_blackd(cmd)
 
-        if rc:
+        if not running:
             return False
 
         if self.deamon:
