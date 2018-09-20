@@ -77,7 +77,7 @@ class Blackd:
             )
             response._content = msg.encode()
             LOG.error(msg)
-            sublime.message_dialog(msg + ", you can start it with blackd_startcommand")
+            # sublime.message_dialog(msg + ", you can start it with blackd_startcommand")
             return self.process_response(response)
 
         self.headers.update(

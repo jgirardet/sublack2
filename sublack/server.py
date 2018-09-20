@@ -77,7 +77,7 @@ class BlackdServer:
             msg = "Blackd already running en port {}".format(self.port)
             LOG.warning(msg + " aborting..")
             # sublime.error_message(msg)
-            sublime.message_dialog(msg)
+            # sublime.message_dialog(msg)
         else:
             if http_state[1]:
                 LOG.debug("port checked, seems free")
