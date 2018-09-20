@@ -15,7 +15,7 @@ import logging
 
 from .consts import (
     HEADERS_TABLE,
-    ALREADY_FORMATED_MESSAGE,
+    ALREADY_FORMATTED_MESSAGE,
     STATUS_KEY,
     PACKAGE_NAME,
     REFORMATTED_MESSAGE,
@@ -286,7 +286,7 @@ class Black:
 
         # already formated, nothing changes
         elif "unchanged" in error_message:
-            self.view.set_status(STATUS_KEY, ALREADY_FORMATED_MESSAGE)
+            self.view.set_status(STATUS_KEY, ALREADY_FORMATTED_MESSAGE)
 
         # diff mode
         elif "--diff" in extra:
@@ -298,3 +298,6 @@ class Black:
 
 
   # self.view.set_status(STATUS_KEY, REFORMATTED_MESSAGE)
+
+
+
