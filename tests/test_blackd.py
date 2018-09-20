@@ -72,7 +72,7 @@ class TestBlackdServer(TestCase):
         self.assertEqual(blacked, self.all())
         self.assertEqual(
             self.view.get_status(sublack.consts.STATUS_KEY),
-            sublack.consts.ALREADY_FORMATED_MESSAGE,
+            sublack.consts.ALREADY_FORMATTED_MESSAGE,
         )
 
     def test_do_diff(self, s, c):

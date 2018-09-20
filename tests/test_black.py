@@ -189,7 +189,7 @@ class TestBlackMethod(TestCase):
         s.run_black.return_value = (0, b"hello\n", b"unchanged")
         c(s, "edit")
         s.view.set_status.assert_called_with(
-            sublack.consts.STATUS_KEY, sublack.consts.ALREADY_FORMATED_MESSAGE
+            sublack.consts.STATUS_KEY, sublack.consts.ALREADY_FORMATTED_MESSAGE
         )
 
         # diff alreadyformatted
@@ -197,7 +197,7 @@ class TestBlackMethod(TestCase):
         s.run_black.return_value = (0, b"hello\n", b"unchanged")
         c(s, "edit", ["--diff"])
         s.view.set_status.assert_called_with(
-            sublack.consts.STATUS_KEY, sublack.consts.ALREADY_FORMATED_MESSAGE
+            sublack.consts.STATUS_KEY, sublack.consts.ALREADY_FORMATTED_MESSAGE
         )
 
         # diff

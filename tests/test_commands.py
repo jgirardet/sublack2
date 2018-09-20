@@ -67,7 +67,7 @@ class TestBlack(TestCase):
         self.assertEqual(blacked, self.all())
         self.assertEqual(
             self.view.get_status(sublack.consts.STATUS_KEY),
-            sublack.consts.ALREADY_FORMATED_MESSAGE,
+            sublack.consts.ALREADY_FORMATTED_MESSAGE,
         )
 
     def test_black_file_dirty_stay_dirty(self, s, c):
