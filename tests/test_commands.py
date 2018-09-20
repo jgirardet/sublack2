@@ -3,7 +3,7 @@ from unittest.mock import patch
 
 import sublime
 from fixtures import sublack, blacked, unblacked, diff
-from sublack.utils import get_open_port
+from sublack.utils import get_open_port, check_blackd_on_http
 from sublack.server import BlackdServer
 import time
 import requests
@@ -16,8 +16,25 @@ from sublack.consts import (
 )
 
 
-# @skip("demonstrating skipping")
+TEST_BLACK_SETTINGS = {
+    "black_command": "black",
+    "black_on_save": True,
+    "black_line_length": None,
+    "black_fast": False,
+    "black_debug_on": True,
+    "black_default_encoding": "utf-8",
+    "black_skip_string_normalization": True,
+    "black_include": None,
+    "black_py36": None,
+    "black_exclude": None,
+    "black_use_blackd": False,
+    "black_blackd_host": "localhost",
+    "black_blackd_port": "",
+}
+
+
 @patch.object(sublack.commands, "is_python", return_value=True)
+@patch.object(sublack.blacker, "get_settings", return_value=TEST_BLACK_SETTINGS)
 class TestBlack(TestCase):
     def setUp(self):
         self.view = sublime.active_window().new_file()
@@ -39,12 +56,12 @@ class TestBlack(TestCase):
     def setText(self, string):
         self.view.run_command("append", {"characters": string})
 
-    def test_black_file(self, s):
+    def test_black_file(self, s, c):
         self.setText(unblacked)
         self.view.run_command("black_file")
         self.assertEqual(blacked, self.all())
 
-    def test_black_file_nothing_todo(self, s):
+    def test_black_file_nothing_todo(self, s, c):
         self.setText(blacked)
         self.view.run_command("black_file")
         self.assertEqual(blacked, self.all())
@@ -53,14 +70,14 @@ class TestBlack(TestCase):
             sublack.consts.ALREADY_FORMATED_MESSAGE,
         )
 
-    def test_black_file_dirty_stay_dirty(self, s):
+    def test_black_file_dirty_stay_dirty(self, s, c):
         self.setText(blacked)
         self.assertTrue(self.view.is_dirty())
         self.view.run_command("black_file")
         self.assertTrue(self.view.is_dirty())
         self.assertEqual(blacked, self.all())
 
-    def test_black_diff(self, s):
+    def test_black_diff(self, s, c):
         # setup in case of fail
         # self.addCleanup(self.view.close)
         # self.addCleanup(self.view.set_scratch, True)
@@ -107,8 +124,7 @@ class TestBlackdServer(TestCase):
     def test_startblackd(self):
         # First normal Run
         self.view.run_command("blackd_start")
-        r = requests.post("http://localhost:" + self.port, data="a=1")
-        self.assertEqual(r.content, b"a = 1\n", "should have been formatted")
+        self.assertTrue(check_blackd_on_http(self.port), "should have been formatted")
         self.assertEqual(
             self.view.get_status(STATUS_KEY),
             BLACKD_STARTED.format(self.port),
@@ -116,8 +132,8 @@ class TestBlackdServer(TestCase):
         )
 
         # already running aka port in use
-        self.view.run_command("blackd_start")
-        print(self.port, "popopopo")
+        with patch("sublime.message_dialog"):
+            self.view.run_command("blackd_start")
         self.assertEqual(
             self.view.get_status(STATUS_KEY),
             BLACKD_START_FAILED.format(self.port),
@@ -127,8 +143,9 @@ class TestBlackdServer(TestCase):
     def test_stoplackd(self):
         # set up
         self.view.run_command("blackd_start")
-        r = requests.post("http://localhost:" + self.port, data="a=1")
-        self.assertEqual(r.content, b"a = 1\n", "should have been formatted")
+        self.assertTrue(
+            check_blackd_on_http(self.port), "ensure blackd is running for the test"
+        )
 
         # already running, normal way
         sublime.run_command("blackd_stop")

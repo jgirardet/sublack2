@@ -5,7 +5,7 @@ import time
 import os
 import sys
 import logging
-from .utils import cache_path, kill_with_pid, popen, get_open_port
+from .utils import cache_path, kill_with_pid, popen, get_open_port, check_blackd_on_http
 from .consts import PACKAGE_NAME
 
 LOG = logging.getLogger(PACKAGE_NAME)
@@ -70,27 +70,33 @@ class BlackdServer:
             LOG.debug("get_cached_pid: %s", pid)
             return pid
 
+    def blackd_is_runnable(self):
+
+        http_state = check_blackd_on_http(self.port)
+        if http_state[0]:
+            msg = "Blackd already running en port {}".format(self.port)
+            LOG.warning(msg + " aborting..")
+            # sublime.error_message(msg)
+            sublime.message_dialog(msg)
+        else:
+            if http_state[1]:
+                LOG.debug("port checked, seems free")
+                return True  #  server not running, port free
+            else:
+                msg("Fail to start blackd port %s seems busy", self.port)
+                LOG.debug("port seems busy")
+        return False
+
     def _run_blackd(self, cmd):
         proc = None
         running = None
 
         LOG.debug("Starting blackd with args %s", cmd)
-        # free = not self.is_running(sleep_time=0)
 
-        try:
-            requests.post("http://" + self.host + ":" + self.port)
-        except requests.ConnectionError:
-            LOG.debug("port checked, seems free")
-        else:
-            LOG.debug("port seems busy")
+        if not self.blackd_is_runnable():
             return proc, False
 
         proc = popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        # import subprocess
-
-        # proc = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        # rc = proc.communicate(timeout=2)
-        # running = self.is_running(timeout=5)
 
         if self.is_running(timeout=5):
             running = True
@@ -103,8 +109,6 @@ class BlackdServer:
 
             # LOG.error(b"blackd start error %s", error)  # show stderr
             LOG.error(b"blackd start error %s", error)  # show stderr
-
-        LOG.debug("_run_blackd: %s, %s", proc, running)
 
         return proc, running
 
@@ -136,7 +140,7 @@ class BlackdServer:
 
             self.write_cache(self.proc.pid)
 
-        return self.is_running()
+        return True
 
     def stop(self, pid=None):
         if self.proc:

@@ -13,7 +13,9 @@ BLACK_ON_SAVE_VIEW_SETTING = "sublack.black_on_save"
 
 ENCODING_PATTERN = r"^[ \t\v]*#.*?coding[:=][ \t]*([-_.a-zA-Z0-9]+)"
 
-ALREADY_FORMATED_MESSAGE = "Sublack: already well formated !"
+ALREADY_FORMATTED_MESSAGE = "Sublack: already well formated !"
+
+REFORMATTED_MESSAGE = "Sublack: reformatted !"
 
 CONFIG_OPTIONS = [
     "black_line_length",

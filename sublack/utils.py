@@ -15,6 +15,7 @@ import signal
 import os
 from functools import partial
 import socket
+import requests
 
 
 def get_settings(view):
@@ -103,3 +104,20 @@ def kill_with_pid(pid: int):
 
 
 popen = partial(subprocess.Popen, startupinfo=startup_info())
+
+
+def check_blackd_on_http(port, host="localhost"):
+    """Check if blackd is running and if tested port is free
+
+    Returns: is_Running, is_Port_is_Free"""
+
+    try:
+        resp = requests.post("http://" + host + ":" + port, data="a=1")
+    except requests.ConnectionError:
+        return False, True
+    else:
+
+        if resp.content == b"a = 1\n":
+            return True, False
+        else:
+            return False, False

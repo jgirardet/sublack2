@@ -13,8 +13,15 @@ import requests
 
 import logging
 
-from .consts import HEADERS_TABLE, ALREADY_FORMATED_MESSAGE, STATUS_KEY, PACKAGE_NAME
-from .utils import get_settings, get_encoding_from_file
+from .consts import (
+    HEADERS_TABLE,
+    ALREADY_FORMATED_MESSAGE,
+    STATUS_KEY,
+    PACKAGE_NAME,
+    REFORMATTED_MESSAGE,
+)
+from .utils import get_settings, get_encoding_from_file, check_blackd_on_http
+
 
 LOG = logging.getLogger(PACKAGE_NAME)
 
@@ -30,6 +37,7 @@ class Blackd:
         self.config = config
 
     def format_headers(self, cmd):
+
         """Get command line args and turn it to properly formatted headers"""
         headers = {}
 
@@ -49,16 +57,28 @@ class Blackd:
 
         returncode(int), out(byte), err(byte)
         """
+        LOG.debug("Respone status code : %s", response.status_code)
         if response.status_code == 200:
-            return 0, response.content, b""
+            return 0, response.content, b"1 file reformated"
 
         elif response.status_code == 204:
-            return 0, response.content, b"unchanged"
+            return 0, response.content, b"1 file left unchanged"
 
         elif response.status_code in [400, 500]:
             return -1, b"", response.content
 
     def __call__(self):
+
+        if not check_blackd_on_http(self.config["black_blackd_port"])[0]:
+            response = requests.Response()
+            response.status_code = 500
+            msg = "blackd not running on port {}".format(
+                self.config["black_blackd_port"]
+            )
+            response._content = msg.encode()
+            LOG.error(msg)
+            sublime.message_dialog(msg + ", you can start it with blackd_startcommand")
+            return self.process_response(response)
 
         self.headers.update(
             {"Content-Type": "application/octet-stream; charset=" + self.encoding}
@@ -275,3 +295,4 @@ class Black:
         # standard mode
         else:
             self.view.replace(edit, self.all, out.decode(encoding))
+            self.view.set_status(STATUS_KEY, REFORMATTED_MESSAGE)
