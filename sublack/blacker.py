@@ -295,4 +295,6 @@ class Black:
         # standard mode
         else:
             self.view.replace(edit, self.all, out.decode(encoding))
-            self.view.set_status(STATUS_KEY, REFORMATTED_MESSAGE)
+
+
+  # self.view.set_status(STATUS_KEY, REFORMATTED_MESSAGE)
