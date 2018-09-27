@@ -169,9 +169,14 @@ class TestFormatAll(TestCase):
         self.view.set_scratch(True)
         self.window.focus_view(self.view)
 
+        self.folder = Path(__file__).parents[1]
+        self.old_data = self.window.project_data()
+        self.window.set_project_data({"folders": [{"path": str(self.folder)}]})
+
     def tearDown(self):
         if hasattr(self, "wrong"):
             self.wrong.unlink()
+        self.window.set_project_data(self.old_data)
         self.window.focus_view(self.view)
         self.window.run_command("close_file")
 
@@ -191,12 +196,12 @@ class TestFormatAll(TestCase):
 
     def test_black_all_fail(self):
 
-        folder = Path(__file__).parent
-        self.wrong = folder / "wrong.py"
+        # folder = Path(__file__).parent
+        self.wrong = self.folder / "wrong.py"
         with open(str(self.wrong), "w") as ww:
             ww.write("ab ac = 2")
 
-        self.view.run_command("black_format_all")
+        self.window.run_command("black_format_all")
         self.assertEqual(
             self.window.active_view().get_status(sublack.STATUS_KEY),
             sublack.REFORMAT_ERRORS,
