@@ -17,20 +17,6 @@ sublack
 
 
 
-Usage
---------
-
-* Run Black on current file:
-	Press `Ctrl-Alt-B` to format the entire file.
-	You can also `Ctrl-Shift-P` (Mac: `Cmd-Shift-P`) and select `Sublack: Format file`.
-
-
-* Run Black with --diff:
-	Press `Ctrl-Alt-Shift-B` will show diff in a new tab.
-	You can also `Ctrl-Shift-P` (Mac: `Cmd-Shift-P`) and select `Sublack: Diff file`.
-
-* Toggle Black on save for current view :
-    Press `Ctrl-Shift-P` (Mac: `Cmd-Shift-P`) and select `Sublack: Toggle black on save for current view`.
 
 Installation
 -------------
@@ -38,6 +24,7 @@ Installation
 #. Install `Black`_ (if you haven't already)::
    
 	   pip install black # Requires python 3.6
+       or pip install blackd # for blackd support
 
 #. In PackageControl just find ``sublack``, and that's it !
 
@@ -47,8 +34,56 @@ Without PackageControl  install manually by navigating to Sublime's `Packages` f
 
       git clone https://github.com/jgirardet/sublack.git
 
+Usage
+--------
+
+* Run Black on current file:
+    Press `Ctrl-Alt-B` to format the entire file.
+    You can also `Ctrl-Shift-P` (Mac: `Cmd-Shift-P`) and select `Sublack: Format file`.
+
+
+* Run Black with --diff:
+    Press `Ctrl-Alt-Shift-B` will show diff in a new tab.
+    You can also `Ctrl-Shift-P` (Mac: `Cmd-Shift-P`) and select `Sublack: Diff file`.
+
+* Toggle Black on save for current view :
+    Press `Ctrl-Shift-P` (Mac: `Cmd-Shift-P`) and select `Sublack: Toggle black on save for current view`.
+
+* run Black Format All :
+    Press `Ctrl-Shift-P` (Mac: `Cmd-Shift-P`) and select `Sublack: Format All`. Run black against each root folder  in a standard way (without taking care of sublack options and configuration). Same thing as running `black .` being in the folder.
+
+* Start Blackd Server :
+    Press `Ctrl-Shift-P` (Mac: `Cmd-Shift-P`) and select `Sublack: Start BlackdServer`.
+
+* Stop Blackd Server :
+    Press `Ctrl-Shift-P` (Mac: `Cmd-Shift-P`) and select `Sublack: Stop BlackdServer`.
+
+
+Blackd Mode
+------------
+
+Sublack supports blackd. If option `black_use_blackd` is to true, Sublack will use blackd (and not black) according the 'host' and 'port' configuration.
+
+You can run blackd from SublimeText manually via `Start Blackd Server` command or automatically at sublimetext start via setting `black_blackd_autostart` to true.
+
+Blackd server started via SublimeText can be stopped manually via the `Stop Blackd Server` command or automatically at sublime's exit.
+
+Unlike "standalone" blackd, using sublack with blackd will continue to take care of the pyproject file.
+
+Using standard mode ou blackd mode in sublack should always have the same result...or it's a bug :-)
+
+Blackd is faster than Black.
+
+Diff is always run with black.
+
 Settings
 ---------
+
+Sublack will always look for settings in the following order:
+ - First in a pyproject.toml file
+ - Second in project file : first with sublack prefix then in a subsetting (see Project settings).
+ - Then in Users global settings
+ - finally in sublack's default settings
 
 Global settings
 *****************
@@ -94,11 +129,15 @@ Sublack specifics options
 * black_use_blackd:
     Use blackd instead of black. Default is false.
 
-* blackd server host:
+* black_blackd_server_host:
     default = "localhost",
 
-* blackd server port:
+* black_blackd_server_port:
     default = "45484"
+
+* black_blackd_autostart:
+    Automaticaly run blackd in the background wen sublime starts. default is false.
+
 
 Project settings
 *******************
@@ -128,8 +167,10 @@ A sublack subsettings is still possible:
 pyproject.toml settings
 ***************************
 
-sublack support use of black configuration in pyproject.toml. Be aware that global/project settings will override pyproject.toml's settings.
+Sublack support use of black configuration in pyproject.toml. Be aware that global/project settings will BE OVERRIDEN by pyproject.toml's settings.
+Sublack will look for this file in your `project directory` then in your root folder(s).
 See `black about pyproject.toml <https://github.com/ambv/black/#pyprojecttoml>`_ .
+
 
 Sublime Linter integration
 ----------------------------

@@ -1,6 +1,6 @@
 environment:
     # The package name
-    PACKAGE: "sublack2"
+    PACKAGE: "sublack"
     SUBLIME_TEXT_VERSION : "3"
 
 install:
@@ -8,7 +8,7 @@ install:
     - "SET PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%"
     # - pip install black
     - pip install aiohttp
-    - pip install git+https://github.com/ambv/black@server
+    - pip install black
     - ps: appveyor DownloadFile "https://raw.githubusercontent.com/SublimeText/UnitTesting/master/sbin/appveyor.ps1"
     - ps: .\appveyor.ps1 "bootstrap" -verbose
     # install Package Control
