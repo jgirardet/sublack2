@@ -197,6 +197,7 @@ class TestFormatAll(TestCase):
             ww.write("ab ac = 2")
 
         self.window.run_command("black_format_all")
+        self.assertFalse(self.wrong)
         self.assertEqual(
             self.window.active_view().get_status(sublack.STATUS_KEY),
             sublack.REFORMAT_ERRORS,
